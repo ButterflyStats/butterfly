@@ -1,0 +1,193 @@
+Overview
+========
+
+Due to the nature of bindings, creating automated documentation is hard.
+The following is the full API, written down manually. Consult the examples for
+a more detailed workflow.
+
+This is best viewed in a text editor.
+
+Containers
+==========
+
+ Vector
+ ------
+
+ Map
+ ---
+
+ dict - Dictionary
+ -----------------
+  A dictionary that provides key -> entry and index -> entry mapping.
+  Important: You can not use the size() function to iterate over a dict.
+             Indices do not have to start at 0 or be ascending.
+             Use indices() to get a list of all indices to iterate over.
+
+  + (unsigned)          size       ()                   Returns the number of entries
+  + (void)              reserve    ( unsigned size )    Reserve space for the number of entries given.
+  + (void)              clear      ()                   Remove all entries and reset dict
+  + (bool)              has_key    ( String key )       Check if an entry matches the key
+  + (bool)              has_index  ( unsigned idx )     Check if an entry matches the index
+  + (Entry)             by_key     ( String key )       Return entry via key
+  + (Entry)             by_index   ( unsigned idx )     Return entry via index
+  + (Vector<unsigned>)  indices    ()                   Returns a list of all indices
+
+  Entry
+  -----
+   + (unsigned)  index       Index of this entry
+   + (String)    key         Key of this entry
+   + (Mixed)     value  ()   Contents. Value depends on the type of dictionary
+
+Butterfly
+=========
+
+ dem_header
+ ----------
+  + (unsigned)  offset_summary  Offset of the summary packet
+
+ dem_packet
+ ----------
+  + (signed)    tick      Tick at which the packet was generated. Can be negative, e.g. -1 SignOn packets
+  + (unsigned)  type      Packet type
+  + (unsigned)  size      Size of the packet
+  + (String)    data  ()  Data of the packet
+
+  demfile
+  -------
+   + (demfile)     new      (String data, unsigned size)  Construct a new demfile
+   + (dem_packet)  get      ()                            Read a packet from the file
+   + (bool)        good     ()                            Returns true if there is still data left to read
+   + (unsigned)    pos      ()                            Return position in file
+   + (void)        set_pos  (unsigned pos)                Set position
+
+ entity_classes
+ --------------
+  + (Vector<class_info>)  data                          List of entity classes
+  + (bool)                is_networked  (String class)  Check if a class can be a "root" entity
+  + (unsigned)            class_id      (String class)  Return ID of given class
+  + (unsigned)            bits          ()              Number of bits a classID occupies in an entity packet
+
+ entity_classes::class_info
+ ----------
+  + (unsigned)     hash     Class hash used internally
+  + (entity_type)  type     Class / Entity type
+
+ entity_type (enum)
+ ------------------
+  + ENT_DEFAULT     Anything that doesn't fit into the categories below
+  + ENT_ABILITY     An ability
+  + ENT_NPC         A npc (e.g. a building)
+  + ENT_HERO        A hero
+  + ENT_ITEM        An item
+  + ENT_UNIT        A unit (e.g. a neutral)
+
+ entity
+ ------
+  + (bool)              valid        ()            Check if the entity handle is valid
+  + (unsigned)          id           ()            Get index of entity in global list
+  + (unsigned)          cls_hash     ()            Get entity class hash
+  + (unsigned)          cls          ()            Index in class list
+  + (entity_type)       type         ()            Get entity type
+  + (void)              spew         ()            Spew entity as table to console
+  + (bool)              has          (String n)    Check if entity has a property with given name
+  + (bool)              get          (String n)    Get property by name
+  + (bool)              get_by_hash  (unsigned n)  Get property by hash
+  + (vector<unsigned>)  properties   ()            Get a list of property hashes. Use this to iterate over all
+                                                   properties together with get_hash.
+
+ entity_state (enum)
+ -------------------
+  + ENT_CREATED     Entity has been created
+  + ENT_UPDATED     Entity has been updated
+  + ENT_DELETED     Entity has been deleted.
+                    If you receive this state in a visitor, the entity handle will be valid until the function returns.
+
+ fs_info
+ -------
+  + (String)    name              Name of the field
+  + (unsigned)  field             Original field index in the serializer proto
+  + (unsigned)  encoder           Encoder Hash
+  + (unsigned)  type              Type Hash
+  + (unsigned)  flags             Encoding flags
+  + (float)     min               Minimum value (float)
+  + (float)     max               Maximum value (float)
+  + (unsigned)  bits         ()   Bits used to encode type
+  + (bool)      dynamic      ()   Whether this is a dynamic property (internal)
+
+ fs_typeinfo
+ -----------
+  + (bool)      is_table      ()  If true, points to a subtable
+  + (unsigned)  table         ()  Subtable index
+  + (bool)      is_dynamic    ()  If true, is dynamic
+  + (size)      size          ()  Size, > 0 if array
+  + (fs_info)   info          ()  Points to fs_info entry
+
+ fs
+ --
+  + (Vector<fs>)  properties  ()              List of sub-properties
+  + (fs)          get         (unsigned idx)  Get a property by index
+  + (String)      name                        Name of the serializer
+  + (unsigned)    hash                        Internal serializer hash
+  + (fs_info)     info        ()              Points to fs_info entry
+
+ flattened_serializer
+ --------------------
+  + (void)  spew   (unsigned idx)  Print serializer with given ID to console
+  + (fs)    get    (unsigned idx)  Get pointer to FS structure for given serializer
+
+ parser
+ ------
+  + (parser)                new            (visitor v)     Create a new parser, uses given visitor for all callbacks
+  + (unsigned)              buildnumber                    Engine buildnumber the replay was generated WITHOUT
+  + (dict<entity_classes>)  entity_classes                 List of entity classes
+  + (flattened_serializer)  serializers    ()              All serializers
+  + (vector<entity>)        baselines      ()              Returns list of all baselines
+  + (unsigned)              tick                           Current tick
+  + (dict<stringtable>)     stringtables   ()              Returns stringtable dict
+  + (entity)                entity         (unsigned idx)  Returns entity at given index
+  + (void)                  open           (String path)   Open replay file at given path
+  + (void)                  reset          ()              Reset parser object
+  + (void)                  require        (unsigned idx)  Call visitor for given packet
+  + (void)                  seek           (float time)    Seek to the given time in the replay
+  + (void)                  parse          (visitor v)     Parse one packet with provided visitor
+  + (void)                  parse_all      (visitor v)     Parse the rest of the replay with provided visitor
+
+ parser_state (enum)
+ -------------------
+  + BEGIN          No packet has been parsed yet
+  + SENDTABLES     Sendtables are available
+  + END            We finished parsing the replay
+
+ property_type (enum)
+ --------------------
+  + V_BOOL          Boolean
+  + V_INT32         Number
+  + V_INT64         Number - 64 bit types might be mangled
+  + V_UINT32        Number
+  + V_UINT64        Number - 64 bit types might be mangled
+  + V_FLOAT         Float
+  + V_STRING        String
+  + V_VECTOR        Float[3]
+
+ property
+ --------
+  + (property_type)  type   ()  Return property type as enum
+  + (fs)             info   ()  Points at fs info struct
+  + (Mixed)          value  ()  Returns value of property
+
+ stringtable
+ -----------
+  + (String)    name        ()             Return stringtable name
+  + (unsigned)  size        ()             Return number of entries
+  + (bool)      has_key     (String k)     Check if entry with key exists
+  + (bool)      has_index   (unsigned i)   Check if entry with index exists
+  + (value)     by_key      (String k)     Get entry by key
+  + (value)     by_index    (unsigned i)   Get entry by index
+  + (void)      clear       ()             Delete all entries
+
+ visitor
+ -------
+  + (void) on_packet   Callback for packets
+  + (void) on_state    Callback for state changes
+  + (void) on_entity   Callback for entity updates
+  + (void) on_tick     Callback for tick changes

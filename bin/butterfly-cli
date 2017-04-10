@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+
+# Directories used
+BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/.."
+TMP="${BASEDIR}/.tmp"
+
+if [ ! -e ${TMP} ]; then
+    mkdir ${TMP}
+fi
+
+FORMAT_BIN="clang-format"
+if [ ! -z ${FORMAT} ]; then
+    FORMAT_BIN=${FORMAT}
+fi
+
+# Make sure all files are formatted
+check_formatting() {
+    ret=0
+
+    for DIR in "${BASEDIR}/src" "${BASEDIR}/test" "${BASEDIR}/include/butterfly"
+    do
+        for file in $(find "$DIR" \( -name '*.hpp' -or -name '*.cpp' \))
+        do
+            ${FORMAT_BIN} "$file" > "${TMP}/format-cur"
+            tainted=$(cmp $file ${TMP}/format-cur)
+
+            if [ "$tainted" != "" ]; then
+                echo "Formatting required: ${file#$BASEDIR} "
+                ret=1
+            fi
+        done
+    done
+
+    return $ret
+}
+
+# Apply formatting
+apply_formatting() {
+    for DIR in "${BASEDIR}/src" "${BASEDIR}/test" "${BASEDIR}/include/butterfly"
+    do
+        for file in $(find "$DIR" \( -name '*.hpp' -or -name '*.cpp' \))
+        do
+            ${FORMAT_BIN} -i "$file"
+        done
+    done
+
+    return 0
+}
+
+# Download protobuf files
+update_proto() {
+    cd $TMP
+
+    if [ ! -e ".git" ]; then
+        git init
+        git remote add -f origin "https://github.com/SteamDatabase/GameTracking-Dota2.git"
+        git config core.sparsecheckout true
+
+        echo "Protobufs/" >> .git/info/sparse-checkout
+    fi
+
+    git pull origin master
+
+    if [ ! -e "${BASEDIR}/proto" ]; then
+        mkdir -p "${BASEDIR}/proto"
+    else
+        rm ${BASEDIR}/proto/*.proto
+    fi
+
+    cp -pa Protobufs/*.proto "${BASEDIR}/proto"
+    return 0
+}
+
+# Show help
+show_help() {
+cat << EOF
+Usage: ${0##*/} [-vh] [command]
+
+    -h                      Show this output
+
+Commands:
+
+    check-formatting        Check all source files are correctly formatted
+    update-proto            Update protocol buffer files
+EOF
+}
+
+# Get all options
+while getopts "hve:" opt; do
+    case "$opt" in
+        h)
+            show_help
+            exit 0
+            ;;
+        '?')
+            show_help >&2
+            exit 1
+            ;;
+    esac
+done
+shift "$((OPTIND-1))" # Shift off the options and optional --.
+
+# Get command
+if [ $# == 0 ]; then
+    echo "Missing command"
+    show_help
+    exit 1
+else
+    command=$1
+fi
+
+case "$command" in
+    apply-formatting)
+        apply_formatting
+        ;;
+    check-formatting)
+        check_formatting
+        ;;
+    update-proto)
+        update_proto
+        ;;
+    *)
+        echo "Unkown command: $command"
+        show_help
+        exit 1
+        ;;
+esac
