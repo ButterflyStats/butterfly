@@ -31,3 +31,8 @@ Todo
 ====
 
 Actually fill this readme with some useful information.
+
+License
+=======
+
+Apache 2
