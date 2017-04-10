@@ -4,3 +4,12 @@
 [submodule "src/ex_protobuf/emscripten"]
 	path = src/ex_protobuf/emscripten
 	url = git@github.com:invokr/protobuf-emscripten.git
+[submodule "src/bindings_python/pybind11"]
+	path = src/bindings_python/pybind11
+	url = https://github.com/pybind/pybind11.git
+[submodule "src/ex_catch/upstream"]
+	path = src/ex_catch/upstream
+	url = https://github.com/philsquared/Catch.git
+[submodule "src/ex_variant/upstream"]
+	path = src/ex_variant/upstream
+	url = https://github.com/eggs-cpp/variant.git
