@@ -1,0 +1,35 @@
+# Butterfly
+src/butterfly_proto/p*
+src/ex_protobuf/emscripten
+src/ex_snappy/emscripten
+replays
+.tmp
+
+# CMake
+*build*
+
+# Apple
+*.DS_Store
+.AppleDouble
+.LSOverride
+
+# C++
+*.d
+*.slo
+*.lo
+*.o
+*.obj
+*.gch
+*.pch
+*.so
+*.dylib
+*.dll
+*.mod
+*.smod
+*.lai
+*.la
+*.a
+*.lib
+*.exe
+*.out
+*.app
