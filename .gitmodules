@@ -1,0 +1,6 @@
+[submodule "src/ex_snappy/emscripten"]
+	path = src/ex_snappy/emscripten
+	url = https://github.com/google/snappy.git
+[submodule "src/ex_protobuf/emscripten"]
+	path = src/ex_protobuf/emscripten
+	url = git@github.com:invokr/protobuf-emscripten.git

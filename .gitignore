@@ -1,7 +1,5 @@
 # Butterfly
 src/butterfly_proto/p*
-src/ex_protobuf/emscripten
-src/ex_snappy/emscripten
 replays
 .tmp
 
