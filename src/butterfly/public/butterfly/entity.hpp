@@ -57,6 +57,8 @@ namespace butterfly {
         uint32_t type : 8;
         /** Class hash */
         uint64_t cls_hash;
+        /** Serializer */
+        const fs* ser;
 
         /** Constructor */
         entity();
@@ -104,8 +106,6 @@ namespace butterfly {
         property* get( const std::string& s ) { return get( constexpr_hash_rt( s.c_str() ) ); }
 
     private:
-        /** Serializer */
-        const fs* ser;
         /** Mutex */
         std::mutex mut;
     };
