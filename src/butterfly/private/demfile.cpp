@@ -19,6 +19,7 @@
  *    limitations under the License.
  */
 
+#include <functional>
 #include <string>
 #include <cstdint>
 #include <cstdio>
