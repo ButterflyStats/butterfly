@@ -63,6 +63,7 @@ MATCH_VECTOR("CUtlVector< CEconItemAttribute >"_chash, "CEconItemAttribute", 1)
 MATCH_VECTOR("CUtlVector< CHeroStatueLiked >"_chash, "CHeroStatueLiked", 1)
 MATCH_VECTOR("CUtlVector< CHeroesPerPlayer >"_chash, "CHeroesPerPlayer", 1)
 MATCH_VECTOR("CUtlVector< CShowcaseSlot >"_chash, "CShowcaseSlot", 1)
+MATCH_VECTOR("CUtlVector< CNetworkedIKProceduralTargetContext >"_chash, "CNetworkedIKProceduralTargetContext", 1)
 MATCH_VECTOR("CUtlVector< DataTeamPlayer_t >"_chash, "DataTeamPlayer_t", 1)
 MATCH_VECTOR("CUtlVector< PlayerResourceBroadcasterData_t >"_chash, "PlayerResourceBroadcasterData_t", 1)
 MATCH_VECTOR("CUtlVector< PlayerResourcePlayerData_t >"_chash, "PlayerResourcePlayerData_t", 1)
@@ -218,6 +219,8 @@ MATCH_SIMPLE("CHandle< CPropVRHand >[4]"_chash, prop_decode_varint, 4);
 MATCH_SIMPLE("CHandle< CPropZipline >"_chash, prop_decode_varint, 0);
 MATCH_SIMPLE("CHandle< CPointHMDAnchor >"_chash, prop_decode_varint, 0);
 MATCH_SIMPLE("CHandle< CPointWorldText >"_chash, prop_decode_varint, 0);
+MATCH_SIMPLE("CHandle< CIngameEvent_Base >"_chash, prop_decode_varint, 0);
+MATCH_SIMPLE("Quaternion"_chash, prop_decode_varint, 0);
 MATCH_SIMPLE("CStrongHandle< InfoForResourceTypeCModel >"_chash, prop_decode_resource, 0);
 MATCH_SIMPLE("CStrongHandle< InfoForResourceTypeCPostProcessingResource >"_chash, prop_decode_varint, 0);
 MATCH_SIMPLE("CStrongHandle< InfoForResourceTypeCTextureBase >"_chash, prop_decode_varint, 0);
