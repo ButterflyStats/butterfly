@@ -26,6 +26,7 @@
 #define BUTTERFLY_DEMFILE_HPP
 
 #include <string>
+#include <functional>
 #include <cstddef>
 
 #include <butterfly/proto/demo.pb.h>
