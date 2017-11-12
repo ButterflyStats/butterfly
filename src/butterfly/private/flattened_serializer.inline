@@ -25,6 +25,7 @@ MATCH_SIMPLE("bool[24]"_chash, prop_decode_bool, 24)
 MATCH_SIMPLE("bool[64]"_chash, prop_decode_bool, 64)
 MATCH_SIMPLE("bool[66]"_chash, prop_decode_bool, 66)
 MATCH_SIMPLE("bool[128]"_chash, prop_decode_bool, 128)
+MATCH_SIMPLE("bool[256]"_chash, prop_decode_bool, 256)
 MATCH_SIMPLE("bool[576]"_chash, prop_decode_bool, 576)
 MATCH_SIMPLE("CLightComponent"_chash, prop_decode_bool, 0)
 MATCH_SIMPLE("CPhysicsComponent"_chash, prop_decode_bool, 0)
@@ -67,6 +68,7 @@ MATCH_VECTOR("CUtlVector< CNetworkedIKProceduralTargetContext >"_chash, "CNetwor
 MATCH_VECTOR("CUtlVector< DataTeamPlayer_t >"_chash, "DataTeamPlayer_t", 1)
 MATCH_VECTOR("CUtlVector< PlayerResourceBroadcasterData_t >"_chash, "PlayerResourceBroadcasterData_t", 1)
 MATCH_VECTOR("CUtlVector< PlayerResourcePlayerData_t >"_chash, "PlayerResourcePlayerData_t", 1)
+MATCH_VECTOR("CUtlVector< PlayerResourcePlayerEventData_t >"_chash, "PlayerResourcePlayerEventData_t", 1)
 MATCH_VECTOR("CUtlVector< PlayerResourcePlayerTeamData_t >"_chash, "PlayerResourcePlayerTeamData_t", 1)
 MATCH_VECTOR("CUtlVector< TempViewerInfo_t >"_chash, "TempViewerInfo_t", 1)
 MATCH_VECTOR("CUtlVector< InGamePredictionData_t >"_chash, "InGamePredictionData_t", 1)
@@ -82,6 +84,7 @@ MATCH_SIMPLE("CUtlVector< CHandle< CIngameEvent_Base > >"_chash, prop_decode_var
 MATCH_VECTOR("CUtlVector< float32 >"_chash, prop_decode_float, 1)
 MATCH_VECTOR("CUtlVector< int32 >"_chash, prop_decode_varint, 1)
 MATCH_VECTOR("CUtlVector< uint8 >"_chash, prop_decode_varint, 1)
+MATCH_VECTOR("CUtlVector< uint32 >"_chash, prop_decode_varint, 1)
 MATCH_VECTOR("CUtlVector< Vector >"_chash, prop_decode_vector, 1)
 MATCH_VECTOR("CUtlVector< bool >"_chash, prop_decode_bool, 1)
 MATCH_VECTOR("CUtlVector< AABB_t >"_chash, "AABB_t", 10)
@@ -105,7 +108,8 @@ MATCH_VECTOR("m_SpeechBubbles"_chash, "m_SpeechBubbles", 1)
 MATCH_OBJECT("ECNYBeastAbility[24]"_chash, "ECNYBeastAbility", 24)
 MATCH_OBJECT("CBaseVRHandAttachmentHandle"_chash, "CBaseVRHandAttachmentHandle", 0);
 
-// vector[2d]
+// vector[2d] / quaternion
+MATCH_SIMPLE("Quaternion"_chash, prop_decode_quaternion, 0)
 MATCH_SIMPLE("Vector"_chash, prop_decode_vector, 0)
 MATCH_SIMPLE("Vector[32]"_chash, prop_decode_vector, 32)
 MATCH_SIMPLE("Vector[4]"_chash, prop_decode_vector, 4)
@@ -140,6 +144,7 @@ MATCH_SIMPLE("int32[5]"_chash, prop_decode_svarint, 5)
 MATCH_SIMPLE("int32[9]"_chash, prop_decode_svarint, 9)
 MATCH_SIMPLE("int32[10]"_chash, prop_decode_svarint, 10)
 MATCH_SIMPLE("int32[12]"_chash, prop_decode_svarint, 12)
+MATCH_SIMPLE("int32[13]"_chash, prop_decode_svarint, 13)
 MATCH_SIMPLE("int32[14]"_chash, prop_decode_svarint, 14)
 MATCH_SIMPLE("int32[24]"_chash, prop_decode_svarint, 24)
 MATCH_SIMPLE("int32[50]"_chash, prop_decode_svarint, 100)
@@ -220,7 +225,6 @@ MATCH_SIMPLE("CHandle< CPropZipline >"_chash, prop_decode_varint, 0);
 MATCH_SIMPLE("CHandle< CPointHMDAnchor >"_chash, prop_decode_varint, 0);
 MATCH_SIMPLE("CHandle< CPointWorldText >"_chash, prop_decode_varint, 0);
 MATCH_SIMPLE("CHandle< CIngameEvent_Base >"_chash, prop_decode_varint, 0);
-MATCH_SIMPLE("Quaternion"_chash, prop_decode_varint, 0);
 MATCH_SIMPLE("CStrongHandle< InfoForResourceTypeCModel >"_chash, prop_decode_resource, 0);
 MATCH_SIMPLE("CStrongHandle< InfoForResourceTypeCPostProcessingResource >"_chash, prop_decode_varint, 0);
 MATCH_SIMPLE("CStrongHandle< InfoForResourceTypeCTextureBase >"_chash, prop_decode_varint, 0);
