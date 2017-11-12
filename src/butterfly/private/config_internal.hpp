@@ -26,7 +26,7 @@
 #define BUTTERFLY_S2_HEADER "PBDEMS2"
 
 /// Number of bytes to allocate for decompression
-#define BUTTERFLY_SNAPPY_BUFFER_SIZE 204800
+#define BUTTERFLY_SNAPPY_BUFFER_SIZE 409600
 
 /// Ifstream chunk size
 #define BUTTERFLY_IFSTREAM_CHUNK_SIZE 2048000
