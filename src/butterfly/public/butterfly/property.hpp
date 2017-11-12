@@ -38,6 +38,9 @@ namespace butterfly {
         /** Vector type */
         typedef std::array<float, 3> Vector;
 
+        /** Quaternion type */
+        typedef std::array<float, 4> Quaternion;
+
         /** Different variant types */
         enum types {
             V_BOOL,
@@ -47,8 +50,9 @@ namespace butterfly {
             V_UINT64,
             V_FLOAT,
             V_STRING,
-            V_VECTOR, //< std::array<3, float>
-            V_ARRAY   // Array of properties
+            V_VECTOR,    //< std::array<3, float>
+            V_ARRAY,     // Array of properties
+            V_QUATERNION // < std::array<4, float>
         };
 
         /** Property info */
@@ -63,6 +67,7 @@ namespace butterfly {
             int64_t i64;
             float fl;
             Vector vec;
+            Quaternion quat;
         } data;
 
         /** Data storage used if type == V_STRING */
@@ -101,6 +106,11 @@ namespace butterfly {
                 std::stringstream s( "" );
                 s << "[" << data.vec[0] << "|" << data.vec[1] << "|" << data.vec[2] << "]";
                 return s.str();
+            } break;
+            case V_QUATERNION: {
+              std::stringstream s( "" );
+              s << "[" << data.quat[0] << "|" << data.quat[1] << "|" << data.quat[2] << "|" << data.quat[3] << "]";
+              return s.str();
             } break;
             case V_ARRAY:
                 return "[Property List]";

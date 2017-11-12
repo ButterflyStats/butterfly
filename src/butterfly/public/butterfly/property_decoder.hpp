@@ -62,6 +62,9 @@ namespace butterfly {
     /** Decode quantized */
     void prop_decode_quantized( bitstream& b, fs_info* f, property* p );
 
+    /** Decode Quaternion */
+    void prop_decode_quaternion( bitstream& b, fs_info* f, property* p );
+
     /** Decode vector */
     void prop_decode_vector( bitstream& b, fs_info* f, property* p );
 

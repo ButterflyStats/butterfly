@@ -129,6 +129,17 @@ namespace butterfly {
         p->type = property::V_FLOAT;
     }
 
+    void prop_decode_quaternion( bitstream& b, fs_info* f, property* p ) {
+        p->data.quat = std::array<float, 4>{{
+           prop_decode_float_i(b, f),
+           prop_decode_float_i(b, f),
+           prop_decode_float_i(b, f),
+           prop_decode_float_i(b, f),
+        }};
+
+        p->type = property::V_VECTOR;
+    }
+
     void prop_decode_vector( bitstream& b, fs_info* f, property* p ) {
         p->data.vec = std::array<float, 3>{{
            prop_decode_float_i(b, f),
