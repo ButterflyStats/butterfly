@@ -136,7 +136,9 @@ namespace butterfly {
 
             // read value
             const bool hasValue = bstream.readBool();
+            bool isCompressed   = false;
             uint32_t size       = 0;
+
             if ( hasValue ) {
                 // memset( &value[0], 0, STRINGTABLE_MAX_VALUE_SIZE );
 
@@ -144,8 +146,34 @@ namespace butterfly {
                     size = userDataSizeBits;
                     bstream.readBits( value, size );
                 } else {
+                    // check if table might be compressed
+                    if (flags & 0x1) {
+                        // this is the case for the instancebaseline for console recorded replays
+                        isCompressed = bstream.readBool();
+                    }
+
                     size = bstream.read( 17 );
+
+                    ASSERT_TRUE( size < STRINGTABLE_MAX_VALUE_SIZE, "Decompressed stringtable to big (value)" );
                     bstream.readBytes( value, size );
+
+                    if (isCompressed) {
+                        size_t uncomp_size = 0;
+                        std::string uncomp_data;
+
+                        // verify and get length
+                        ASSERT_TRUE( snappy::IsValidCompressedBuffer( value, size ), "Invalid snappy compression buffer (value)" );
+                        ASSERT_TRUE( snappy::GetUncompressedLength( value, size, &uncomp_size ), "Unable to get uncompressed length (value)" );
+
+                        // uncompress
+                        uncomp_data.resize( uncomp_size );
+                        ASSERT_TRUE( snappy::RawUncompress( value, size, &uncomp_data[0] ), "Failed to decompress data (value)" );
+
+                        // save to value
+                        ASSERT_TRUE( size < STRINGTABLE_MAX_VALUE_SIZE, "Decompressed stringtable to big (value)" );
+                        size = uncomp_size;
+                        memcpy(value, uncomp_data.c_str(), size);
+                    }
                 }
             }
 
