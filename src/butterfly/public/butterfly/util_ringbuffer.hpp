@@ -54,10 +54,14 @@ namespace butterfly {
 
         /** Copy assignment operator */
         ringbuffer& operator=( const ringbuffer& r ) {
-            std::swap( data, r.data );
-            std::swap( pos, r.pos );
-            std::swap( capacity, r.capacity );
-            std::swap( wraparound, r.wraparound );
+            // std::swap( data, r.data );
+            // std::swap( pos, r.pos );
+            // std::swap( capacity, r.capacity );
+            // std::swap( wraparound, r.wraparound );
+            data = r.data;
+            pos = r.pos;
+            capacity = r.capacity;
+            wraparound = r.wraparound;
 
             return this;
         }
