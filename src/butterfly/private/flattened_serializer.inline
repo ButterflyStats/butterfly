@@ -281,6 +281,5 @@ MATCH_SIMPLE("ValueRemapperMomentumType_t"_chash, prop_decode_varint, 0)
 MATCH_SIMPLE("ValueRemapperOutputType_t"_chash, prop_decode_varint, 0)
 MATCH_SIMPLE("ValueRemapperRatchetType_t"_chash, prop_decode_varint, 0)
 MATCH_SIMPLE("WeaponState_t"_chash, prop_decode_varint, 0)
-MATCH_SIMPLE("WeightedSuggestion_t[15]"_chash, prop_decode_varint, 15)
 
 #undef MATCH_SIMPLE
