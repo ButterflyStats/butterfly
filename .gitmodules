@@ -3,7 +3,7 @@
 	url = https://github.com/google/snappy.git
 [submodule "src/ex_protobuf/emscripten"]
 	path = src/ex_protobuf/emscripten
-	url = git@github.com:invokr/protobuf-emscripten.git
+	url = https://github.com/invokr/protobuf-emscripten.git
 [submodule "src/bindings_python/pybind11"]
 	path = src/bindings_python/pybind11
 	url = https://github.com/pybind/pybind11.git

@@ -61,7 +61,7 @@ namespace butterfly {
         std::string ret;
 
         switch ( hash ) {
-#include "resources.hash.inline"
+         // #include "resources.hash.inline"
         default:
             return "unknown";
         }

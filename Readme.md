@@ -1,7 +1,9 @@
 About
 =====
 
-butterfly is a Dota 2 replay parser focused on Source2. Consider it the spiritual successor of my [Alice]() project.
+butterfly is a Dota 2 replay parser focused on Source2, built by [invokr](https://github.com/invokr). Consider it the spiritual successor of his [Alice](https://github.com/invokr/alice2) project.
+
+Unfortunately the original author of this code has left forever, so [noxville](https://github.com/noxville) and [spheenik](https://github.com/spheenik) have taken over this marvellous example of engineering.
 
 Building
 ========
@@ -27,10 +29,10 @@ The CMake part for building javascript libaries looks like this:
 
 This should generate butterflyjs0.js and butterflyjs1.js. Use the later for a stable JS api.
 
-Todo
+Docker
 ====
 
-Actually fill this readme with some useful information.
+You can use the included Dockerfile to build a docker image of the project - and then just copy out the built binaries or use them in-place.
 
 License
 =======
