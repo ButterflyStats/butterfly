@@ -107,7 +107,8 @@ MATCH_SIMPLE("CNetworkedQuantizedFloat"_chash, prop_decode_quantized, 0)
 MATCH_OBJECT("CPlayerLocalData"_chash, "CPlayerLocalData", 0)
 MATCH_VECTOR("m_SpeechBubbles"_chash, "m_SpeechBubbles", 1)
 MATCH_OBJECT("ECNYBeastAbility[24]"_chash, "ECNYBeastAbility", 24)
-MATCH_OBJECT("CBaseVRHandAttachmentHandle"_chash, "CBaseVRHandAttachmentHandle", 0);
+MATCH_OBJECT("CBaseVRHandAttachmentHandle"_chash, "CBaseVRHandAttachmentHandle", 0)
+MATCH_OBJECT("WeightedSuggestion_t[15]"_chash, "WeightedSuggestion_t", 15)
 
 // vector[2d] / quaternion
 MATCH_SIMPLE("Quaternion"_chash, prop_decode_quaternion, 0)
