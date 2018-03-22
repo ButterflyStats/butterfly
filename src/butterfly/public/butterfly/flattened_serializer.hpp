@@ -86,7 +86,6 @@ namespace butterfly {
                 return properties[0];
             }
 
-            std::cout << info->name << "(" << n << "," << properties.size() << ")" << std::endl;    
             ASSERT_TRUE( n < properties.size(), "FS out-of-bounds" );
             return properties[n];
         }
