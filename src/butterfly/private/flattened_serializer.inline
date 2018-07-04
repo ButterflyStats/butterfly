@@ -281,5 +281,6 @@ MATCH_SIMPLE("ValueRemapperMomentumType_t"_chash, prop_decode_varint, 0)
 MATCH_SIMPLE("ValueRemapperOutputType_t"_chash, prop_decode_varint, 0)
 MATCH_SIMPLE("ValueRemapperRatchetType_t"_chash, prop_decode_varint, 0)
 MATCH_SIMPLE("WeaponState_t"_chash, prop_decode_varint, 0)
+MATCH_SIMPLE("DOTACustomHeroPickRulesPhase_t"_chash, prop_decode_varint, 0)
 
 #undef MATCH_SIMPLE
