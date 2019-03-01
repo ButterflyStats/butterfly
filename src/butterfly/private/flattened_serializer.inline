@@ -121,6 +121,7 @@ MATCH_SIMPLE("Vector[8]"_chash, prop_decode_vector, 8)
 MATCH_SIMPLE("Vector2D"_chash, prop_decode_vector2d, 0)
 MATCH_SIMPLE("Vector2D[2]"_chash, prop_decode_vector2d, 2)
 MATCH_SIMPLE("Vector4D"_chash, prop_decode_vector4d, 0)
+MATCH_SIMPLE("Vector4D[4]"_chash, prop_decode_vector4d, 4)
 
 // qangle
 MATCH_SIMPLE("QAngle"_chash, prop_decode_qangle, 0)
