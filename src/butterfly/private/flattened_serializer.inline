@@ -72,6 +72,7 @@ MATCH_VECTOR("CUtlVector< PlayerResourcePlayerData_t >"_chash, "PlayerResourcePl
 MATCH_VECTOR("CUtlVector< PlayerResourcePlayerEventData_t >"_chash, "PlayerResourcePlayerEventData_t", 1)
 MATCH_VECTOR("CUtlVector< PlayerResourcePlayerTeamData_t >"_chash, "PlayerResourcePlayerTeamData_t", 1)
 MATCH_VECTOR("CUtlVector< TempViewerInfo_t >"_chash, "TempViewerInfo_t", 1)
+MATCH_VECTOR("CUtlVector< TreeModelReplacement_t >"_chash, "TreeModelReplacement_t", 1)
 MATCH_VECTOR("CUtlVector< InGamePredictionData_t >"_chash, "InGamePredictionData_t", 1)
 MATCH_SIMPLE("CUtlVector< CUtlSymbolLarge >"_chash, prop_decode_string, 10)
 MATCH_VECTOR("DOTA_CombatLogQueryProgress"_chash, "DOTA_CombatLogQueryProgress", 1)
