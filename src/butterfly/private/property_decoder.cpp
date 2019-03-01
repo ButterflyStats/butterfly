@@ -161,6 +161,18 @@ namespace butterfly {
         p->type = property::V_VECTOR;
     }
 
+    /** Decode vector4d */
+    void prop_decode_vector4d( bitstream& b, fs_info* f, property* p ) {
+        p->data.quat = std::array<float, 4>{{
+           prop_decode_float_i(b, f),
+           prop_decode_float_i(b, f),
+           prop_decode_float_i(b, f),
+           prop_decode_float_i(b, f)
+        }};
+
+        p->type = property::V_VECTOR;
+    }
+
     void prop_decode_qangle( bitstream& b, fs_info* f, property* p ) {
         if ( f->bits != 0 ) {
             p->data.vec = std::array<float, 3>{{

@@ -71,6 +71,9 @@ namespace butterfly {
     /** Decode vector2d */
     void prop_decode_vector2d( bitstream& b, fs_info* f, property* p );
 
+    /** Decode vector4d */
+    void prop_decode_vector4d( bitstream& b, fs_info* f, property* p );
+
     /** Decode angle */
     void prop_decode_qangle( bitstream& b, fs_info* f, property* p );
 
