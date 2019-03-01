@@ -181,6 +181,7 @@ MATCH_SIMPLE("uint8[20]"_chash, prop_decode_varint, 20)
 MATCH_SIMPLE("uint8[24]"_chash, prop_decode_varint, 24)
 MATCH_SIMPLE("uint8[32]"_chash, prop_decode_varint, 32)
 MATCH_SIMPLE("uint8[64]"_chash, prop_decode_varint, 64)
+MATCH_SIMPLE("uint8[97]"_chash, prop_decode_varint, 97)
 MATCH_SIMPLE("uint8[300]"_chash, prop_decode_varint, 300)
 
 // uint16_t
