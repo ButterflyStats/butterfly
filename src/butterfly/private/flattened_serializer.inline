@@ -224,6 +224,7 @@ MATCH_SIMPLE("CHandle< CBaseEntity >[19]"_chash, prop_decode_varint, 19);
 MATCH_SIMPLE("CHandle< CBaseEntity >[24]"_chash, prop_decode_varint, 24);
 MATCH_SIMPLE("CHandle< CBaseEntity >[30]"_chash, prop_decode_varint, 30);
 MATCH_SIMPLE("CHandle< CBaseEntity >[31]"_chash, prop_decode_varint, 31);
+MATCH_SIMPLE("CHandle< CBaseEntity >[32]"_chash, prop_decode_varint, 32);
 MATCH_SIMPLE("CHandle< CBaseEntity >[64]"_chash, prop_decode_varint, 64);
 MATCH_SIMPLE("CHandle< CBaseModelEntity >"_chash, prop_decode_varint, 0);
 MATCH_SIMPLE("CHandle< CBasePlayer >"_chash, prop_decode_varint, 0);
