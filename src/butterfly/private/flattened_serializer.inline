@@ -85,6 +85,7 @@ MATCH_SIMPLE("CUtlVector< CHandle< CBasePlayer > >"_chash, prop_decode_varint, 6
 MATCH_SIMPLE("CUtlVector< CHandle< CEconWearable > >"_chash, prop_decode_varint, 100)
 MATCH_SIMPLE("CUtlVector< CHandle< CIngameEvent_Base > >"_chash, prop_decode_varint, 10)
 MATCH_SIMPLE("CUtlVector< CHandle< CPostProcessingVolume > >"_chash, prop_decode_varint, 10)
+MATCH_SIMPLE("CUtlVector< CHandle< CBaseModelEntity > >"_chash, prop_decode_varint, 100)
 MATCH_VECTOR("CUtlVector< float32 >"_chash, prop_decode_float, 1)
 MATCH_VECTOR("CUtlVector< int32 >"_chash, prop_decode_varint, 1)
 MATCH_VECTOR("CUtlVector< uint8 >"_chash, prop_decode_varint, 1)
