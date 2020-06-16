@@ -85,12 +85,13 @@ MATCH_SIMPLE("CUtlVector< CHandle< CBasePlayer > >"_chash, prop_decode_varint, 6
 MATCH_SIMPLE("CUtlVector< CHandle< CEconWearable > >"_chash, prop_decode_varint, 100)
 MATCH_SIMPLE("CUtlVector< CHandle< CIngameEvent_Base > >"_chash, prop_decode_varint, 10)
 MATCH_SIMPLE("CUtlVector< CHandle< CPostProcessingVolume > >"_chash, prop_decode_varint, 10)
+MATCH_SIMPLE("CUtlVector< CHandle< CBaseModelEntity > >"_chash, prop_decode_varint, 100)
 MATCH_VECTOR("CUtlVector< float32 >"_chash, prop_decode_float, 1)
 MATCH_VECTOR("CUtlVector< int32 >"_chash, prop_decode_varint, 1)
 MATCH_VECTOR("CUtlVector< uint8 >"_chash, prop_decode_varint, 1)
 MATCH_VECTOR("CUtlVector< uint32 >"_chash, prop_decode_varint, 1)
 MATCH_VECTOR("CUtlVector< Vector >"_chash, prop_decode_vector, 1)
-MATCH_VECTOR("CUtlVector< Vector2D >"_chash, prop_decode_vector, 1)
+MATCH_VECTOR("CUtlVector< Vector2D >"_chash, prop_decode_vector, 10)
 MATCH_VECTOR("CUtlVector< bool >"_chash, prop_decode_bool, 1)
 MATCH_VECTOR("CUtlVector< AABB_t >"_chash, "AABB_t", 10)
 MATCH_VECTOR("CUtlVector< QAngle >"_chash, prop_decode_qangle, 0)
@@ -213,6 +214,7 @@ MATCH_SIMPLE("itemid_t[10]"_chash, prop_decode_varint, 10)
 // handles
 MATCH_SIMPLE("CHandle< CBaseCombatCharacter >"_chash, prop_decode_varint, 0);
 MATCH_SIMPLE("CHandle< CBaseCombatWeapon >"_chash, prop_decode_varint, 0);
+MATCH_SIMPLE("CHandle< CBaseAnimating >"_chash, prop_decode_varint, 0);
 MATCH_SIMPLE("CHandle< CBaseEntity >"_chash, prop_decode_varint, 0);
 MATCH_SIMPLE("CHandle< CBaseEntity >[2]"_chash, prop_decode_varint, 2);
 MATCH_SIMPLE("CHandle< CBaseEntity >[4]"_chash, prop_decode_varint, 4);
