@@ -2,6 +2,7 @@
 src/butterfly_proto/p*
 replays
 .tmp
+.idea/
 
 # CMake
 *build*

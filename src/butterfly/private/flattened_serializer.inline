@@ -90,10 +90,11 @@ MATCH_VECTOR("CUtlVector< int32 >"_chash, prop_decode_varint, 1)
 MATCH_VECTOR("CUtlVector< uint8 >"_chash, prop_decode_varint, 1)
 MATCH_VECTOR("CUtlVector< uint32 >"_chash, prop_decode_varint, 1)
 MATCH_VECTOR("CUtlVector< Vector >"_chash, prop_decode_vector, 1)
+MATCH_VECTOR("CUtlVector< Vector2D >"_chash, prop_decode_vector, 1)
 MATCH_VECTOR("CUtlVector< bool >"_chash, prop_decode_bool, 1)
 MATCH_VECTOR("CUtlVector< AABB_t >"_chash, "AABB_t", 10)
 MATCH_VECTOR("CUtlVector< QAngle >"_chash, prop_decode_qangle, 0)
-
+MATCH_VECTOR("CUtlVector< FowBlocker_t >"_chash, "FowBlocker_t", 1)
 
 // float
 MATCH_SIMPLE("float32"_chash, prop_decode_float, 0)
@@ -262,6 +263,7 @@ MATCH_SIMPLE("eLiteralHandType"_chash, prop_decode_varint, 0)
 MATCH_SIMPLE("attributeprovidertypes_t"_chash, prop_decode_varint, 0)
 MATCH_SIMPLE("gender_t"_chash, prop_decode_varint, 0)
 MATCH_SIMPLE("item_definition_index_t"_chash, prop_decode_varint, 0)
+MATCH_SIMPLE("item_definition_index_t[14]"_chash, prop_decode_varint, 14)
 MATCH_SIMPLE("itemid_t"_chash, prop_decode_varint, 0)
 MATCH_SIMPLE("style_index_t"_chash, prop_decode_varint, 0)
 MATCH_SIMPLE("AbilityBarType_t"_chash, prop_decode_varint, 0)
@@ -301,6 +303,7 @@ MATCH_SIMPLE("ValueRemapperOutputType_t"_chash, prop_decode_varint, 0)
 MATCH_SIMPLE("ValueRemapperRatchetType_t"_chash, prop_decode_varint, 0)
 MATCH_SIMPLE("WeaponState_t"_chash, prop_decode_varint, 0)
 MATCH_SIMPLE("DOTACustomHeroPickRulesPhase_t"_chash, prop_decode_varint, 0)
+MATCH_SIMPLE("FowBlockerShape_t"_chash, prop_decode_varint, 0)
 
 #undef MATCH_SIMPLE
 
