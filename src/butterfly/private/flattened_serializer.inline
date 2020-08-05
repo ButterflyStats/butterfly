@@ -93,15 +93,7 @@ MATCH_VECTOR("CUtlVector< int32 >"_chash, prop_decode_varint, 1)
 MATCH_VECTOR("CUtlVector< uint8 >"_chash, prop_decode_varint, 1)
 MATCH_VECTOR("CUtlVector< uint32 >"_chash, prop_decode_varint, 1)
 MATCH_VECTOR("CUtlVector< Vector >"_chash, prop_decode_vector, 1)
-<<<<<<< HEAD
-<<<<<<< HEAD
-MATCH_VECTOR("CUtlVector< Vector2D >"_chash, prop_decode_vector, 1)
-=======
 MATCH_VECTOR("CUtlVector< Vector2D >"_chash, prop_decode_vector, 10)
->>>>>>> 1f85f49a4a42a0fc66c1080dbea72db5f3f90e5d
-=======
-MATCH_VECTOR("CUtlVector< Vector2D >"_chash, prop_decode_vector, 10)
->>>>>>> b2ae2ca583c4f505a9eac99e2d5eff987a72f770
 MATCH_VECTOR("CUtlVector< bool >"_chash, prop_decode_bool, 1)
 MATCH_VECTOR("CUtlVector< AABB_t >"_chash, "AABB_t", 10)
 MATCH_VECTOR("CUtlVector< QAngle >"_chash, prop_decode_qangle, 0)
