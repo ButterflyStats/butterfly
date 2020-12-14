@@ -78,6 +78,7 @@ MATCH_VECTOR("CUtlVector< TreeModelReplacement_t >"_chash, "TreeModelReplacement
 MATCH_VECTOR("CUtlVector< InGamePredictionData_t >"_chash, "InGamePredictionData_t", 1)
 MATCH_VECTOR("CUtlVector< NeutralSpawnBoxes_t >"_chash, "NeutralSpawnBoxes_t", 1)
 MATCH_SIMPLE("CUtlVector< CUtlSymbolLarge >"_chash, prop_decode_string, 10)
+MATCH_VECTOR("CUtlVector< PingConfirmationState_t >"_chash, "PingConfirmationState_t", 1)
 MATCH_VECTOR("DOTA_CombatLogQueryProgress"_chash, "DOTA_CombatLogQueryProgress", 1)
 MATCH_VECTOR("DOTA_PlayerChallengeInfo"_chash, "DOTA_PlayerChallengeInfo", 1)
 MATCH_SIMPLE("CUtlVector< CHandle< CBaseCombatWeapon > >"_chash, prop_decode_varint, 2)
@@ -119,6 +120,8 @@ MATCH_VECTOR("m_SpeechBubbles"_chash, "m_SpeechBubbles", 1)
 MATCH_OBJECT("ECNYBeastAbility[24]"_chash, "ECNYBeastAbility", 24)
 MATCH_OBJECT("CBaseVRHandAttachmentHandle"_chash, "CBaseVRHandAttachmentHandle", 0)
 MATCH_VECTOR("WeightedSuggestion_t[15]"_chash, "WeightedSuggestion_t", 15)
+MATCH_VECTOR("AttachmentHandle_t[10]"_chash, "AttachmentHandle_t", 10)
+MATCH_OBJECT("PingConfirmationIconType"_chash, "PingConfirmationIconType", 0)
 
 // vector[2d] / quaternion
 MATCH_SIMPLE("Quaternion"_chash, prop_decode_quaternion, 0)
@@ -195,6 +198,7 @@ MATCH_SIMPLE("uint8[300]"_chash, prop_decode_varint, 300)
 
 // uint16_t
 MATCH_SIMPLE("uint16"_chash, prop_decode_varint, 0)
+MATCH_SIMPLE("uint16[32]"_chash, prop_decode_varint, 32)
 
 // uint32_t
 MATCH_SIMPLE("uint32"_chash, prop_decode_varint, 0)
