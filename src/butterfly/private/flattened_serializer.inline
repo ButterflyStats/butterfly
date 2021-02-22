@@ -89,6 +89,7 @@ MATCH_SIMPLE("CUtlVector< CHandle< CEconWearable > >"_chash, prop_decode_varint,
 MATCH_SIMPLE("CUtlVector< CHandle< CIngameEvent_Base > >"_chash, prop_decode_varint, 10)
 MATCH_SIMPLE("CUtlVector< CHandle< CPostProcessingVolume > >"_chash, prop_decode_varint, 10)
 MATCH_SIMPLE("CUtlVector< CHandle< CBaseModelEntity > >"_chash, prop_decode_varint, 100)
+MATCH_VECTOR("CUtlVector< CHandle< CBasePlayerWeapon > >"_chash, prop_decode_varint, 100)
 MATCH_VECTOR("CUtlVector< float32 >"_chash, prop_decode_float, 1)
 MATCH_VECTOR("CUtlVector< int32 >"_chash, prop_decode_varint, 1)
 MATCH_VECTOR("CUtlVector< uint8 >"_chash, prop_decode_varint, 1)
@@ -99,6 +100,9 @@ MATCH_VECTOR("CUtlVector< bool >"_chash, prop_decode_bool, 1)
 MATCH_VECTOR("CUtlVector< AABB_t >"_chash, "AABB_t", 10)
 MATCH_VECTOR("CUtlVector< QAngle >"_chash, prop_decode_qangle, 0)
 MATCH_VECTOR("CUtlVector< FowBlocker_t >"_chash, "FowBlocker_t", 1)
+MATCH_VECTOR("CUtlVector< CTransform >"_chash, "CTransform", 1)
+MATCH_VECTOR("CUtlVector< CBasePlayerWeapon >"_chash, "CBasePlayerWeapon", 1)
+
 
 // float
 MATCH_SIMPLE("float32"_chash, prop_decode_float, 0)
@@ -259,6 +263,7 @@ MATCH_SIMPLE("CHandle< CPropZipline >"_chash, prop_decode_varint, 0);
 MATCH_SIMPLE("CHandle< CPointHMDAnchor >"_chash, prop_decode_varint, 0);
 MATCH_SIMPLE("CHandle< CPointWorldText >"_chash, prop_decode_varint, 0);
 MATCH_SIMPLE("CHandle< CIngameEvent_Base >"_chash, prop_decode_varint, 0);
+MATCH_SIMPLE("CHandle< CBasePlayerWeapon >"_chash, prop_decode_varint, 0);
 MATCH_SIMPLE("CStrongHandle< InfoForResourceTypeCModel >"_chash, prop_decode_resource, 0);
 MATCH_SIMPLE("CStrongHandle< InfoForResourceTypeCPostProcessingResource >"_chash, prop_decode_varint, 0);
 MATCH_SIMPLE("CStrongHandle< InfoForResourceTypeCTextureBase >"_chash, prop_decode_varint, 0);
@@ -312,6 +317,8 @@ MATCH_SIMPLE("ValueRemapperRatchetType_t"_chash, prop_decode_varint, 0)
 MATCH_SIMPLE("WeaponState_t"_chash, prop_decode_varint, 0)
 MATCH_SIMPLE("DOTACustomHeroPickRulesPhase_t"_chash, prop_decode_varint, 0)
 MATCH_SIMPLE("FowBlockerShape_t"_chash, prop_decode_varint, 0)
+MATCH_SIMPLE("AttachmentHandle_t"_chash, prop_decode_varint, 0)
+MATCH_SIMPLE("PhysicsRagdollPose_t*"_chash, prop_decode_varint, 0)
+
 
 #undef MATCH_SIMPLE
-
