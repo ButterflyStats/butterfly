@@ -507,7 +507,7 @@ namespace butterfly {
                 entities[idx]->set_serializer( &serializers->get( cls ) );
 
                 const std::string bkey = std::to_string(cls);
-                if (baselines.has_key(bkey)) {
+                if (baselines.has_key(bkey) && !baselines.by_key(bkey).value.empty()) {
                     bitstream b(baselines.by_key(bkey).value);
                     entities[idx]->parse( b );
                 }
