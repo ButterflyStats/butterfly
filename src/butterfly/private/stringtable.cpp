@@ -38,9 +38,9 @@
 
 namespace butterfly {
     stringtable::stringtable( CSVCMsg_CreateStringTable* table )
-        : tblName( table->name() ), userDataFixed( table->user_data_fixed_size() ),
-          userDataSize( table->user_data_size() ), userDataSizeBits( table->user_data_size_bits() ),
-          flags( table->flags() ) {
+        : tblName( table->name() ), userDataSizeBits( table->user_data_size_bits() ),
+          flags( table->flags() ), userDataFixed( table->user_data_fixed_size() ),
+          usingVarintBitcounts( table->using_varint_bitcounts() ) {
         // Snappy within snappy because why not
         if ( table->data_compressed() ) {
             size_t size = 0;
@@ -152,7 +152,9 @@ namespace butterfly {
                         isCompressed = bstream.readBool();
                     }
 
-                    size = bstream.read( 17 );
+                    size = usingVarintBitcounts
+                        ? bstream.readUBitVar()
+                        : bstream.read( 17 );
 
                     ASSERT_TRUE( size < STRINGTABLE_MAX_VALUE_SIZE, "Decompressed stringtable to big (value)" );
                     bstream.readBytes( value, size );

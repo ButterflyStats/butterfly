@@ -52,38 +52,6 @@ namespace butterfly {
         /** Constructor, initializes table from protobuf object */
         stringtable( CSVCMsg_CreateStringTable* table );
 
-        /** Move constructor */
-        stringtable( stringtable&& o ) noexcept { swap( o ); }
-
-        /** Move assignment operator */
-        stringtable& operator=( stringtable&& o ) {
-            swap( o );
-            return *this;
-        }
-
-        /** Copy constructor */
-        stringtable( const stringtable& o ) noexcept {
-            tblName = o.tblName;
-            userDataFixed = o.userDataFixed;
-            userDataSize = o.userDataSize;
-            userDataSizeBits = o.userDataSizeBits;
-            flags = o.flags;
-            table = o.table;
-        }
-
-        /** Default destructor */
-        ~stringtable() = default;
-
-        /** Swap this stringtable with given one */
-        void swap( stringtable& s ) {
-            std::swap( tblName, s.tblName );
-            std::swap( userDataFixed, s.userDataFixed );
-            std::swap( userDataSize, s.userDataSize );
-            std::swap( userDataSizeBits, s.userDataSizeBits );
-            std::swap( flags, s.flags );
-            std::swap( table, s.table );
-        }
-
         /** Returns iterator pointed at the beginning of the stringtable entries */
         iterator begin() { return table.begin(); }
 
@@ -126,14 +94,14 @@ namespace butterfly {
     private:
         /** Name of this stringtable */
         std::string tblName;
-        /** Whether the data read from updates has a fixed size */
-        bool userDataFixed;
-        /** Size of data in bytes */
-        uint32_t userDataSize;
         /** Size of data in bits */
         uint32_t userDataSizeBits;
         /** Flags for this table */
         int32_t flags;
+        /** Whether the data read from updates has a fixed size */
+        bool userDataFixed;
+        /** Whether the data size uses UBitVar encoding or it's always encoded as 17 bits */
+        bool usingVarintBitcounts;
         /** List of stringtable entries */
         container table;
 
