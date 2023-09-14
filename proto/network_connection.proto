@@ -1,7 +1,5 @@
 import "google/protobuf/descriptor.proto";
 
-option cc_generic_services = false;
-
 extend .google.protobuf.EnumValueOptions {
 	optional string network_connection_token = 50500;
 }
@@ -77,7 +75,6 @@ enum ENetworkDisconnectionReason {
 	NETWORK_DISCONNECT_STEAM_DENY_MISC = 67 [(network_connection_token) = "#GameUI_Disconnect_SteamDeny_Misc"];
 	NETWORK_DISCONNECT_STEAM_DENY_BAD_ANTI_CHEAT = 68 [(network_connection_token) = "#GameUI_Disconnect_SteamDeny_BadAntiCheat"];
 	NETWORK_DISCONNECT_SERVER_SHUTDOWN = 69 [(network_connection_token) = "#GameUI_Disconnect_ServerShutdown"];
-	NETWORK_DISCONNECT_SPLITPACKET_SEND_OVERFLOW = 70 [(network_connection_token) = "#GameUI_Disconnect_Splitpacket_Send_Overflow"];
 	NETWORK_DISCONNECT_REPLAY_INCOMPATIBLE = 71 [(network_connection_token) = "#GameUI_Disconnect_ReplayIncompatible"];
 	NETWORK_DISCONNECT_CONNECT_REQUEST_TIMEDOUT = 72 [(network_connection_token) = "#GameUI_Disconnect_ConnectionTimedout"];
 	NETWORK_DISCONNECT_SERVER_INCOMPATIBLE = 73 [(network_connection_token) = "#GameUI_Disconnect_ServerIncompatible"];
@@ -114,5 +111,16 @@ enum ENetworkDisconnectionReason {
 	NETWORK_DISCONNECT_REJECT_SERVERAUTHDISABLED = 147 [(network_connection_token) = "#GameUI_ServerAuthDisabled"];
 	NETWORK_DISCONNECT_REJECT_SERVERCDKEYAUTHINVALID = 148 [(network_connection_token) = "#GameUI_ServerCDKeyAuthInvalid"];
 	NETWORK_DISCONNECT_REJECT_BANNED = 149 [(network_connection_token) = "#GameUI_ServerRejectBanned"];
+	NETWORK_DISCONNECT_KICKED_TEAMKILLING = 150 [(network_connection_token) = "#Player_DisconnectReason_TeamKilling"];
+	NETWORK_DISCONNECT_KICKED_TK_START = 151 [(network_connection_token) = "#Player_DisconnectReason_TK_Start"];
+	NETWORK_DISCONNECT_KICKED_UNTRUSTEDACCOUNT = 152 [(network_connection_token) = "#Player_DisconnectReason_UntrustedAccount"];
+	NETWORK_DISCONNECT_KICKED_CONVICTEDACCOUNT = 153 [(network_connection_token) = "#Player_DisconnectReason_ConvictedAccount"];
+	NETWORK_DISCONNECT_KICKED_COMPETITIVECOOLDOWN = 154 [(network_connection_token) = "#Player_DisconnectReason_CompetitiveCooldown"];
+	NETWORK_DISCONNECT_KICKED_TEAMHURTING = 155 [(network_connection_token) = "#Player_DisconnectReason_TeamHurting"];
+	NETWORK_DISCONNECT_KICKED_HOSTAGEKILLING = 156 [(network_connection_token) = "#Player_DisconnectReason_HostageKilling"];
+	NETWORK_DISCONNECT_KICKED_VOTEDOFF = 157 [(network_connection_token) = "#Player_DisconnectReason_VotedOff"];
+	NETWORK_DISCONNECT_KICKED_IDLE = 158 [(network_connection_token) = "#Player_DisconnectReason_Idle"];
+	NETWORK_DISCONNECT_KICKED_SUICIDE = 159 [(network_connection_token) = "#Player_DisconnectReason_Suicide"];
+	NETWORK_DISCONNECT_KICKED_NOSTEAMLOGIN = 160 [(network_connection_token) = "#Player_DisconnectReason_NoSteamLogin"];
+	NETWORK_DISCONNECT_KICKED_NOSTEAMTICKET = 161 [(network_connection_token) = "#Player_DisconnectReason_NoSteamTicket"];
 }
-

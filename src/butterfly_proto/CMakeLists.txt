@@ -10,7 +10,7 @@ PROJECT ( butterfly_proto VERSION 1.0 )
 
 SET ( PROTO_FILES demo dota_commonmessages dota_clientmessages dota_modifiers dota_gcmessages_common
     dota_shared_enums dota_usermessages gameevents gcsdk_gcmessages networkbasetypes netmessages network_connection
-    usermessages steammessages )
+    usermessages steammessages steammessages_steamlearn.steamworkssdk steammessages_unified_base.steamworkssdk )
 
 FOREACH ( PROTO ${PROTO_FILES} )
     # Generate protobuf

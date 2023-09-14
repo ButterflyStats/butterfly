@@ -1,8 +1,4 @@
-import "dota_shared_enums.proto";
 import "dota_gcmessages_common.proto";
-
-option optimize_for = SPEED;
-option cc_generic_services = false;
 
 message CSourceTVGameSmall {
 	message Player {
@@ -21,10 +17,14 @@ message CSourceTVGameSmall {
 	optional uint32 spectators = 9;
 	optional uint32 game_mode = 10;
 	optional uint32 average_mmr = 11;
+	optional uint64 match_id = 12;
+	optional uint32 series_id = 13;
 	optional string team_name_radiant = 15;
 	optional string team_name_dire = 16;
 	optional fixed64 team_logo_radiant = 24;
 	optional fixed64 team_logo_dire = 25;
+	optional uint32 team_id_radiant = 30;
+	optional uint32 team_id_dire = 31;
 	optional uint32 sort_score = 17;
 	optional float last_update_time = 18;
 	optional int32 radiant_lead = 19;
@@ -36,6 +36,7 @@ message CSourceTVGameSmall {
 	optional uint32 weekend_tourney_division = 27;
 	optional uint32 weekend_tourney_skill_level = 28;
 	optional uint32 weekend_tourney_bracket_round = 29;
+	optional uint32 custom_game_difficulty = 32;
 }
 
 message CMsgClientToGCFindTopSourceTVGames {
@@ -63,12 +64,6 @@ message CMsgGCToClientTopWeekendTourneyGames {
 	repeated .CSourceTVGameSmall live_games = 1;
 }
 
-message CMsgClientToGCTopMatchesRequest {
-	optional uint32 hero_id = 1;
-	optional uint32 player_account_id = 2;
-	optional uint32 team_id = 3;
-}
-
 message CMsgClientToGCTopLeagueMatchesRequest {
 }
 
@@ -92,65 +87,32 @@ message CMsgGCToClientTopFriendMatchesResponse {
 	repeated .CMsgDOTAMatchMinimal matches = 1;
 }
 
-message CMsgClientToGCFindTopMatches {
-	optional uint32 start_game = 1;
-	optional uint32 league_id = 2;
-	optional uint32 hero_id = 3;
-	optional uint32 friend_id = 4;
-	optional bool friend_list = 5;
-	optional bool league_list = 6;
-}
-
-message CMsgGCToClientFindTopLeagueMatchesResponse {
-	optional uint32 start_game = 1;
-	optional uint32 league_id = 2;
-	optional uint32 hero_id = 3;
-	repeated uint32 match_ids = 4;
-	repeated .CMsgDOTAMatch matches = 5;
-}
-
 message CMsgSpectateFriendGame {
 	optional fixed64 steam_id = 1;
+	optional bool live = 2;
 }
 
 message CMsgSpectateFriendGameResponse {
+	enum EWatchLiveResult {
+		SUCCESS = 0;
+		ERROR_GENERIC = 1;
+		ERROR_NO_PLUS = 2;
+		ERROR_NOT_FRIENDS = 3;
+		ERROR_LOBBY_NOT_FOUND = 4;
+		ERROR_SPECTATOR_IN_A_LOBBY = 5;
+		ERROR_LOBBY_IS_LAN = 6;
+		ERROR_WRONG_LOBBY_TYPE = 7;
+		ERROR_WRONG_LOBBY_STATE = 8;
+		ERROR_PLAYER_NOT_PLAYER = 9;
+		ERROR_TOO_MANY_SPECTATORS = 10;
+		ERROR_SPECTATOR_SWITCHED_TEAMS = 11;
+		ERROR_FRIENDS_ON_BOTH_SIDES = 12;
+		ERROR_SPECTATOR_IN_THIS_LOBBY = 13;
+		ERROR_LOBBY_IS_LEAGUE = 14;
+	}
+
 	optional fixed64 server_steamid = 4;
-}
-
-message CMsgDOTAMatchMinimal {
-	message Player {
-		optional uint32 account_id = 1;
-		optional uint32 hero_id = 2;
-		optional uint32 kills = 3;
-		optional uint32 deaths = 4;
-		optional uint32 assists = 5;
-		repeated uint32 items = 6;
-		optional uint32 player_slot = 7;
-	}
-
-	message Tourney {
-		optional uint32 league_id = 1;
-		optional uint32 series_type = 8;
-		optional uint32 series_game = 9;
-		optional uint32 weekend_tourney_tournament_id = 10;
-		optional uint32 weekend_tourney_season_trophy_id = 11;
-		optional uint32 weekend_tourney_division = 12;
-		optional uint32 weekend_tourney_skill_level = 13;
-		optional uint32 radiant_team_id = 2;
-		optional string radiant_team_name = 3;
-		optional fixed64 radiant_team_logo = 4;
-		optional uint32 dire_team_id = 5;
-		optional string dire_team_name = 6;
-		optional fixed64 dire_team_logo = 7;
-	}
-
-	optional uint64 match_id = 1;
-	optional fixed32 start_time = 2;
-	optional uint32 duration = 3;
-	optional .DOTA_GameMode game_mode = 4 [default = DOTA_GAMEMODE_NONE];
-	repeated .CMsgDOTAMatchMinimal.Player players = 6;
-	optional .CMsgDOTAMatchMinimal.Tourney tourney = 7;
-	optional .EMatchOutcome match_outcome = 8 [default = k_EMatchOutcome_Unknown];
+	optional .CMsgSpectateFriendGameResponse.EWatchLiveResult watch_live_result = 5 [default = SUCCESS];
 }
 
 message CDOTAReplayDownloadInfo {
@@ -209,10 +171,33 @@ message CDOTABroadcasterInfo {
 	optional bool live = 3;
 	optional string team_name_radiant = 4;
 	optional string team_name_dire = 5;
-	optional string stage_name = 6;
 	optional uint32 series_game = 7;
-	optional uint32 series_type = 8;
 	optional uint32 upcoming_broadcast_timestamp = 9;
 	optional bool allow_live_video = 10;
+	optional uint32 node_type = 11;
+	optional string node_name = 12;
 }
 
+message CMsgDOTASeries {
+	message TeamInfo {
+		optional uint32 team_id = 1;
+		optional string team_name = 2;
+		optional string team_logo_url = 3;
+		optional uint32 wager_count = 4;
+	}
+
+	message LiveGame {
+		optional fixed64 server_steam_id = 1;
+		optional .CMsgDOTASeries.TeamInfo team_radiant = 2;
+		optional .CMsgDOTASeries.TeamInfo team_dire = 3;
+		optional uint32 team_radiant_score = 4;
+		optional uint32 team_dire_score = 5;
+	}
+
+	optional uint32 series_id = 1;
+	optional uint32 series_type = 2;
+	optional .CMsgDOTASeries.TeamInfo team_1 = 3;
+	optional .CMsgDOTASeries.TeamInfo team_2 = 4;
+	repeated .CMsgDOTAMatchMinimal match_minimal = 5;
+	optional .CMsgDOTASeries.LiveGame live_game = 6;
+}

@@ -377,7 +377,8 @@ namespace butterfly {
                     bs.seekForward( size << 3 );
                 }
             } break;
-            case DOTA_UM_ParticleManager: {
+            case DOTA_UM_ParticleManager:
+            case UM_ParticleManager: {
                 bs.readBytes( data, size );
                 particles.process_update( data, size );
             } break;
