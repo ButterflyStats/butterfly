@@ -53,7 +53,7 @@
 
 namespace butterfly {
     parser::parser( )
-        : dem( nullptr ), buildnumber( 0 ), serializers( nullptr ), packets( 2048, false ), seekPos( 0 ) {
+        : dem( nullptr ), buildnumber( 0 ), serializers( nullptr ), seekPos( 0 ), packets( 2048, false ) {
         entities.resize( BUTTERFLY_MAX_ENTS, nullptr );
     }
 
@@ -271,7 +271,7 @@ namespace butterfly {
 
             // check if we can get to the seekpoint
             trigger = false;
-            float gtime = gtime = e->get( "m_pGameRules.m_fGameTime"_chash )->data.fl;
+            float gtime = e->get( "m_pGameRules.m_fGameTime"_chash )->data.fl;
 
             if (time - gtime < 61) {
                 while (gtime < time) {
