@@ -1,0 +1,8 @@
+**/.git/
+src/butterfly_proto/p*
+replays
+.tmp
+.idea/
+*build*
+Dockerfile
+.dockerignore
