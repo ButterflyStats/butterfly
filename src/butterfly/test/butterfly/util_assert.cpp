@@ -19,7 +19,7 @@
  *    limitations under the License.
  */
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <butterfly/util_assert.hpp>
 
 // This is somewhat of an unusual test as ASSERT_X calls std::terminate internally, so no further tests will be
@@ -29,7 +29,7 @@
 TEST_CASE( "assert_equal", "[util_assert.hpp]" ) { ASSERT_EQUAL( 1, 1, "" ); }
 
 // Test True
-TEST_CASE( "assert_true", "[util_assert].hpp]" ) { ASSERT_TRUE( 1, "" ); }
+TEST_CASE( "assert_true", "[util_assert.hpp]" ) { ASSERT_TRUE( 1, "" ); }
 
 // Test False
 TEST_CASE( "assert_false", "[util_assert.hpp]" ) { ASSERT_FALSE( 0, "" ); }

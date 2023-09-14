@@ -64,7 +64,7 @@ IF ( 0 )
         ${CMAKE_CURRENT_SOURCE_DIR}/test/butterfly/util_ztime.cpp
     )
 
-    TARGET_LINK_LIBRARIES ( butterfly_test butterfly ex_catch )
+    TARGET_LINK_LIBRARIES ( butterfly_test butterfly Catch2WithMain )
 
     INSTALL(
         TARGETS butterfly_test

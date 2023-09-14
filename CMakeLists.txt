@@ -47,7 +47,7 @@ ADD_SUBDIRECTORY( ${CMAKE_SOURCE_DIR}/src/butterfly_proto )
 ADD_SUBDIRECTORY( ${CMAKE_SOURCE_DIR}/src/butterfly_trie )
 
 # External libraries
-ADD_SUBDIRECTORY( ${CMAKE_SOURCE_DIR}/src/ex_catch )
+ADD_SUBDIRECTORY( ${CMAKE_SOURCE_DIR}/src/ex_catch2 )
 ADD_SUBDIRECTORY( ${CMAKE_SOURCE_DIR}/src/ex_snappy )
 ADD_SUBDIRECTORY( ${CMAKE_SOURCE_DIR}/src/ex_protobuf )
 ADD_SUBDIRECTORY( ${CMAKE_SOURCE_DIR}/src/ex_variant )

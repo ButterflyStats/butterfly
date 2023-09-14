@@ -21,6 +21,3 @@
 
 #include <butterfly/util_assert.hpp>
 assert_cb g_assertion_callback = nullptr;
-
-#define CATCH_CONFIG_MAIN
-#include <catch.hpp>
