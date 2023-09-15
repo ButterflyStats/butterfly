@@ -144,7 +144,7 @@ namespace butterfly {
 
         /** Adds a new row to the table */
         template <typename... T>
-        void append( T... data ) {
+        void append( T&&... data ) {
             // Make sure we keep track of the maximum columns
             const uint32_t n = sizeof...( data ) + 1;
             if ( colsize < n )
@@ -152,7 +152,7 @@ namespace butterfly {
 
             // Call internal append
             row_t row;
-            append_internal( row, data... );
+            append_internal( row, std::forward<T>(data)... );
 
             // Add row to table
             this->data.push_back( std::move( row ) );
@@ -228,14 +228,14 @@ namespace butterfly {
 
         /** Internal append function */
         template <typename Head, typename... Tail>
-        void append_internal( row_t& r, Head h, Tail... t ) {
+        void append_internal( row_t& r, Head h, Tail&&... t ) {
             r.push_back( variant_t( h ) );
-            append_internal( r, t... );
+            append_internal( r, std::forward<Tail>(t)... );
         }
 
         template <typename Head>
-        void append_internal( row_t& r, Head h ) {
-            r.push_back( variant_t( h ) );
+        void append_internal( row_t& r, Head&& h ) {
+            r.push_back( variant_t( std::move(h) ) );
         }
 
         /** Returns length of value */

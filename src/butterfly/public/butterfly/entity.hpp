@@ -26,12 +26,15 @@
 #define BUTTERFLY_ENTITY_HPP
 
 #include <string>
+#include <memory>
 #include <mutex>
-#include <unordered_map>
+#include <cstdint>
+#include <vector>
 #include <iostream>
 
 #include <butterfly/util_chash.hpp>
-#include <butterfly/property.hpp>
+#include <butterfly/entity_classes.hpp>
+#include <butterfly/flattened_serializer.hpp>
 
 /// Entity mask for ehandles
 #define EMASK 0x3FFF
@@ -40,13 +43,12 @@
 namespace butterfly {
     // forward decl
     class bitstream;
+    class resource_manifest;
     struct fs;
 
     /** Single networked entity */
     class entity {
     public:
-        /** Properties, indexes by their hash */
-        std::unordered_map<uint64_t, property*> properties;
         /** Baseline pointer, can be null */
         entity* baseline;
         /** Own entity ID in global list */
@@ -54,60 +56,123 @@ namespace butterfly {
         /** Class id */
         uint32_t cls : 24;
         /** Type */
-        uint32_t type : 8;
+        entity_types type : 8;
         /** Class hash */
         uint64_t cls_hash;
         /** Serializer */
         const fs* ser;
 
         /** Constructor */
-        entity();
+        entity( const fs* ser );
 
         /** Destructor */
         ~entity();
 
         /** Copy constructor */
-        entity(const entity& e);
-
-        /** Set serialzier */
-        void set_serializer( const fs* serializer );
+        entity( const entity& e );
 
         /** Parse entity data from bitstream */
-        void parse( bitstream& b );
+        void parse( const resource_manifest& m, bitstream& b );
 
         /** Spew property to console */
-        void spew(std::ostream& out = std::cout);
+        void spew( const flattened_serializer* serializers, std::ostream& out = std::cout );
 
-        /** Returns true if field exists */
-        bool has( uint64_t i ) {
-            auto i1 = properties.find( i );
-            if ( i1 != properties.end() ) {
-                return true;
+        /** Get field by its path name hashes */
+        template <typename T>
+        std::pair<const fs*, const void*> getRaw( const T& path ) const {
+            if ( path.empty() )
+                return { ser, properties };
+
+            auto table_data = ser->table_data;
+            auto prop_idx   = table_data->properties_map.find( path[0] );
+            ASSERT_TRUE( prop_idx != table_data->properties_map.end(),
+                         "Trying to access invalid property" );
+            auto prop_fs   = table_data->properties[prop_idx->second];
+            auto prop_addr = &properties[prop_fs->offset];
+            for ( size_t i = 1; i < path.size(); i++ ) {
+                bool in_array = prop_fs->is_array();
+                if ( in_array ) {
+                    prop_fs = prop_fs->array_prop;
+                    auto& ar =
+                        *reinterpret_cast<field_array_container*>( prop_addr );
+                    if ( ar.size <= path[i] )
+                        return { nullptr, nullptr };
+                    prop_addr = &ar.data[path[i] * prop_fs->size];
+                } else {
+                    ASSERT_TRUE( prop_fs->is_table(),
+                                 "Trying to access property of a primitive type" );
+                    table_data = prop_fs->table_data;
+                    prop_idx   = table_data->properties_map.find( path[i] );
+                    ASSERT_TRUE( prop_idx != table_data->properties_map.end(),
+                                 "Trying to access invalid property" );
+                    prop_fs   = table_data->properties[prop_idx->second];
+                    prop_addr = &prop_addr[prop_fs->offset];
+                }
             }
 
-            return false;
+            return { prop_fs, prop_addr };
         }
 
-        /** Returns true if field exists */
-        bool has( const std::string& s ) { return has( constexpr_hash_rt( s.c_str() ) ); }
+        /** Get field by its name hash */
+        std::pair<const fs*, const void*> getRaw( uint64_t hash ) const {
+            return getRaw( std::array<uint64_t, 1>{ hash } );
+        }
+        
+        /** Get field by its path name hashes */
+        template <typename T, typename P>
+        T get( const P& path ) const {
+            auto prop      = getRaw<P>( path );
+            auto prop_fs   = prop.first;
+            auto prop_addr = prop.second;
 
-        /** Get field by id */
-        property* get( uint64_t i ) {
-            auto i1 = properties.find( i );
-            if ( i1 != properties.end() ) {
-                return i1->second;
-            }
+            if ( prop_fs == nullptr )
+                return T();
 
-            ASSERT_TRUE( 0 != 0, "Trying to access invalid property" );
-            return nullptr;
+            ASSERT_FALSE( prop_fs->is_array(),
+                          "Trying to resolve an array as a regular property" );
+            ASSERT_FALSE( prop_fs->is_table(),
+                          "Trying to resolve a table as a regular property" );
+
+            if ( prop_addr == nullptr )
+                return T();
+
+            return prop_fs->info->template extract_value<T>( prop_addr );
+        }
+
+        /** Get field by its name hash */
+        template <typename T>
+        T get( uint64_t hash ) const {
+            return get<T>( std::array<uint64_t, 1>{ hash } );
         }
 
         /** Get field by string */
-        property* get( const std::string& s ) { return get( constexpr_hash_rt( s.c_str() ) ); }
+        template <typename T>
+        T get( const std::string& s ) const {
+            return get<T>( constexpr_hash_rt( s.c_str() ) );
+        }
+
+        /** Returns true if field exists */
+        bool has( uint64_t hash ) const { return getRaw( hash ).second != nullptr; }
+
+        /** Returns true if field exists */
+        bool has( const std::string& name ) const {
+            return has( constexpr_hash_rt( name.c_str() ) );
+        }
+
+        /** Returns true if field exists */
+        template <typename T>
+        bool has( const T& path ) const {
+            return getRaw( path ).second != nullptr;
+        }
 
     private:
-        /** Mutex */
-        std::mutex mut;
+        void init_props( uint8_t* ptr, const fs* f );
+        void deinit_props( uint8_t* ptr, const fs* f );
+        void move_props( uint8_t* old_ptr, uint8_t* new_ptr, const fs* f );
+        void copy_props( uint8_t* old_ptr, uint8_t* new_ptr, const fs* f );
+
+        /** Properties */
+        uint8_t* properties;
     };
 } /* butterfly */
 

@@ -20,224 +20,214 @@
  */
 
 #include <butterfly/flattened_serializer.hpp>
-#include <butterfly/property.hpp>
+#include <butterfly/resource_manifest.hpp>
 
+#include <butterfly/quantized.hpp>
 #include <butterfly/util_bitstream.hpp>
 #include <butterfly/util_chash.hpp>
-#include "quantized.hpp"
 
 namespace butterfly {
     /* clang-format off */
 
     const char* prop_decoder_name( fs& f ) {
-        if (f.decoder == prop_decode_qangle_pitch_yawn) return "QAngle (Pitch & Yawn)";
-        if (f.decoder == prop_decode_bool) return "Bool";
-        if (f.decoder == prop_decode_fixed64) return "Int64 (fixed length)";
-        if (f.decoder == prop_decode_coord) return "Coord";
-        if (f.decoder == prop_decode_dynamic) return "Dynamic Array";
-        if (f.decoder == prop_decode_float) return "Float";
-        if (f.decoder == prop_decode_simtime) return "Simulation Time";
-        if (f.decoder == prop_decode_normal) return "Normal (float)";
-        if (f.decoder == prop_decode_noscale) return "Noscale (float)";
-        if (f.decoder == prop_decode_quantized) return "Quantized (float)";
-        if (f.decoder == prop_decode_vector) return "Vector";
-        if (f.decoder == prop_decode_vector2d) return "VectorXY";
-        if (f.decoder == prop_decode_qangle) return "QAngle";
-        if (f.decoder == prop_decode_string) return "String";
-        if (f.decoder == prop_decode_varint) return "Varint";
-        if (f.decoder == prop_decode_resource) return "Resource Path";
+        if (f.is_array())
+            return "Dynamic Array";
 
-        return "Unknown";
-    }
-
-    void prop_decode_bool( bitstream& b, fs_info* f, property* p ) {
-        p->data.b = b.readBool();
-        p->type = property::V_BOOL;
-    }
-
-    void prop_decode_fixed64( bitstream& b, fs_info* f, property* p ) {
-        p->data.u64 = (uint64_t)b.read(32) | ((uint64_t)b.read(32) << 32);
-        p->type = property::V_UINT64;
-    }
-
-    void prop_decode_coord( bitstream& b, fs_info* f, property* p ) {
-        p->data.fl = b.readCoord();
-        p->type = property::V_FLOAT;
-    }
-
-    void prop_decode_dynamic( bitstream& b, fs_info* f, property* p ) {
-        p->data.u64 = b.readVarUInt64();
-        p->type = property::V_UINT64;
-    }
-
-    void prop_decode_normal( bitstream& b, fs_info* f, property* p ) {
-        p->data.vec = b.read3BitNormal();
-        p->type = property::V_VECTOR;
-    }
-
-    //** Internal inlined version */
-    static force_inline float prop_decode_quantized_i( bitstream& b, fs_info* f ) {
-        // Leaks as well as breaks multi-usage. @todo: Fix
-        static std::vector<quantized_float_decoder*> decs(20480, nullptr);
-
-        if (!decs[f->field]) {
-            decs[f->field] = new quantized_float_decoder( f->bits, f->flags, f->min, f->max );
+        switch (f.decoder_type) {
+            case PropertyDecoderType::BOOL:
+                return "Bool";
+            case PropertyDecoderType::FIXED64:
+                return "Int64 (fixed length)";
+            case PropertyDecoderType::VARUINT:
+                return "Varuint";
+            case PropertyDecoderType::VARINT:
+                return "Varint";
+            case PropertyDecoderType::COORD:
+                return "Coord";
+            case PropertyDecoderType::FLOAT:
+                return "Float";
+            case PropertyDecoderType::FLOAT_NO_DECODER:
+                return "Raw Float";
+            case PropertyDecoderType::SIMTIME:
+                return "Simulation Time";
+            case PropertyDecoderType::VECTOR2:
+                return "VectorXY";
+            case PropertyDecoderType::QANGLE_PITCH_YAW:
+                return "QAngle (Pitch & Yaw)";
+            case PropertyDecoderType::NORMALIZED_VECTOR:
+                return "Normalized vector";
+            case PropertyDecoderType::VECTOR:
+                return "Vector";
+            case PropertyDecoderType::COORD_VECTOR:
+                return "Coord vector";
+            case PropertyDecoderType::QANGLE:
+                return "QAngle";
+            case PropertyDecoderType::QUATERNION:
+                return "Quaternion";
+            case PropertyDecoderType::STRING:
+                return "String";
+            case PropertyDecoderType::RESOURCE:
+                return "Resource path string";
+            default:
+                return "Unknown";
         }
-
-        return decs[f->field]->decode( b );
     }
 
-    void prop_decode_quantized( bitstream& b, fs_info* f, property* p ) {
-        p->data.fl = prop_decode_quantized_i( b, f );
-        p->type = property::V_FLOAT;
+    void prop_decode_bool( bitstream& b, const fs_info* f, void* p ) {
+        *reinterpret_cast<bool*>( p ) = b.readBool();
     }
 
-    /** Internal inlined version */
-    static force_inline float prop_decode_noscale_i( bitstream& b, fs_info* f ) {
-        union { uint32_t i; float f; } u;
-        u.i = b.read( 32 );
-        return u.f;
+    void prop_decode_fixed64( bitstream& b, const fs_info* f, void* p ) {
+        *reinterpret_cast<uint64_t*>( p ) = (uint64_t)b.read(32) | ((uint64_t)b.read(32) << 32);
     }
 
-    void prop_decode_noscale( bitstream& b, fs_info* f, property* p ) {
-        p->data.u32 = b.read(32);
-        p->type = property::V_FLOAT;
+    void prop_decode_coord( bitstream& b, const fs_info* f, void* p ) {
+        *reinterpret_cast<float*>( p ) = b.readCoord();
     }
 
-    /** Internal inlined version */
-    static force_inline float prop_decode_float_i( bitstream& b, fs_info* f ) {
-        if ( f->encoder == "coord"_chash ) {
-            return b.readCoord();
-        }
-
-        if ( f->bits == 0 || f->bits >= 32 ) {
-            return prop_decode_noscale_i( b, f );
-        }
-
-        return prop_decode_quantized_i( b, f );
+    void prop_decode_normal( bitstream& b, const fs_info* f, void* p ) {
+        *reinterpret_cast<std::array<float, 3>*>( p ) = b.read3BitNormal();
     }
 
-    void prop_decode_float( bitstream& b, fs_info* f, property* p ) {
-        p->data.fl = prop_decode_float_i( b, f );
-        p->type = property::V_FLOAT;
+    void prop_decode_float( bitstream& b, const fs_info* f, void* p ) {
+        *reinterpret_cast<float*>( p ) = f->quantized_decoder.decode( b );
     }
 
-    void prop_decode_simtime( bitstream& b, fs_info* f, property* p ) {
-        static constexpr float frame_time = (1.0f / 30.0f);
-        p->data.fl = b.readVarUInt64() * frame_time;
-        p->type = property::V_FLOAT;
+    void prop_decode_float_no_decoder(bitstream& b, const fs_info* f, void* p ) {
+        *reinterpret_cast<uint32_t*>( p ) = b.read(32);
     }
 
-    void prop_decode_quaternion( bitstream& b, fs_info* f, property* p ) {
-        p->data.quat = std::array<float, 4>{{
-           prop_decode_float_i(b, f),
-           prop_decode_float_i(b, f),
-           prop_decode_float_i(b, f),
-           prop_decode_float_i(b, f),
-        }};
-
-        p->type = property::V_VECTOR;
+    void prop_decode_simtime( bitstream& b, const fs_info* f, void* p ) {
+        constexpr float frame_time = 1.0f / 30.0f;
+        *reinterpret_cast<float*>( p ) = b.readVarUInt64() * frame_time;
     }
 
-    void prop_decode_vector( bitstream& b, fs_info* f, property* p ) {
-        p->data.vec = std::array<float, 3>{{
-           prop_decode_float_i(b, f),
-           prop_decode_float_i(b, f),
-           prop_decode_float_i(b, f)
-        }};
+    void prop_decode_quaternion( bitstream& b, const fs_info* f, void* p ) {
+        auto& quat = *reinterpret_cast<std::array<float, 4>*>( p );
+        quat[0] = f->quantized_decoder.decode( b );
+        quat[1] = f->quantized_decoder.decode( b );
+        quat[2] = f->quantized_decoder.decode( b );
+        quat[3] = f->quantized_decoder.decode( b );
+    }
 
-        p->type = property::V_VECTOR;
+    void prop_decode_coord_vector( bitstream& b, const fs_info* f, void* p ) {
+        auto& vec = *reinterpret_cast<std::array<float, 3>*>( p );
+        vec[0] = b.readCoord();
+        vec[1] = b.readCoord();
+        vec[2] = b.readCoord();
+    }
+
+    void prop_decode_vector( bitstream& b, const fs_info* f, void* p ) {
+        auto& vec = *reinterpret_cast<std::array<float, 3>*>( p );
+        vec[0] = f->quantized_decoder.decode( b );
+        vec[1] = f->quantized_decoder.decode( b );
+        vec[2] = f->quantized_decoder.decode( b );
     }
 
     /** Decode vector2d */
-    void prop_decode_vector2d( bitstream& b, fs_info* f, property* p ) {
-        p->data.vec = std::array<float, 3>{{
-           prop_decode_float_i(b, f),
-           prop_decode_float_i(b, f),
-           0.0f
-        }};
-
-        p->type = property::V_VECTOR;
+    void prop_decode_vector2d( bitstream& b, const fs_info* f, void* p ) {
+        auto& vec = *reinterpret_cast<std::array<float, 2>*>( p );
+        vec[0] = f->quantized_decoder.decode( b );
+        vec[1] = f->quantized_decoder.decode( b );
     }
 
-    /** Decode vector4d */
-    void prop_decode_vector4d( bitstream& b, fs_info* f, property* p ) {
-        p->data.quat = std::array<float, 4>{{
-           prop_decode_float_i(b, f),
-           prop_decode_float_i(b, f),
-           prop_decode_float_i(b, f),
-           prop_decode_float_i(b, f)
-        }};
-
-        p->type = property::V_VECTOR;
-    }
-
-    void prop_decode_qangle( bitstream& b, fs_info* f, property* p ) {
-        if ( f->bits != 0 ) {
-            p->data.vec = std::array<float, 3>{{
-               prop_decode_float_i(b, f),
-               prop_decode_float_i(b, f),
-               prop_decode_float_i(b, f)
-            }};
-
-            p->type = property::V_VECTOR;
+    void prop_decode_qangle( bitstream& b, const fs_info* f, void* p ) {
+        if ( f->quantized_decoder.bit_count() != 0) {
+            prop_decode_vector( b, f, p );
         } else {
-            std::array<float, 3> toSet{ {0.0f, 0.0f, 0.0f} };
-
             bool b1 = b.readBool();
             bool b2 = b.readBool();
             bool b3 = b.readBool();
-
-            // Get reference
-            if ( p->type == property::V_VECTOR ) {
-                toSet = p->data.vec;
-            }
-
-            if ( b1 ) toSet[0] = b.readCoord();
-            if ( b2 ) toSet[1] = b.readCoord();
-            if ( b3 ) toSet[2] = b.readCoord();
-
-            if ( p->type != property::V_VECTOR ) {
-                p->data.vec = toSet;
-            }
-
-            p->type = property::V_VECTOR;
+            
+            auto vec = reinterpret_cast<float*>( p );
+            if ( b1 ) vec[0] = b.readCoord();
+            if ( b2 ) vec[1] = b.readCoord();
+            if ( b3 ) vec[2] = b.readCoord();
         }
     }
 
-    void prop_decode_qangle_pitch_yawn( bitstream& b, fs_info* f, property* p ) {
-        p->data.vec = std::array<float, 3>{{
-           b.readAngle(f->bits),
-           b.readAngle(f->bits),
-           0
-        }};
-
-        p->type = property::V_VECTOR;
+    void prop_decode_qangle_pitch_yaw( bitstream& b, const fs_info* f, void* p ) {
+        auto& vec = *reinterpret_cast<std::array<float, 3>*>( p );
+        vec[0] = f->quantized_decoder.decode( b );
+        vec[1] = f->quantized_decoder.decode( b );
     }
 
-    void prop_decode_string( bitstream& b, fs_info* f, property* p ) {
+    void prop_decode_string( bitstream& b, const fs_info* f, void* p ) {
         char buffer[1024];
         size_t size = b.readString( buffer, 1024 );
-        p->data_str.assign( buffer, size );
-        p->type = property::V_STRING;
+        reinterpret_cast<std::string*>( p )->assign( buffer, size );
     }
 
-    void prop_decode_varint( bitstream& b, fs_info* f, property* p ) {
-        p->data.u64 = b.readVarUInt64();
-        p->type = property::V_UINT64;
+    void prop_decode_varint( bitstream& b, const fs_info* f, void* p ) {
+        auto val = b.readVarUInt64();
+        switch ( f->type ) {
+            case PropertyType::UINT64:
+                *reinterpret_cast<uint64_t*>( p ) = val;
+                break;
+            case PropertyType::UINT32:
+                *reinterpret_cast<uint32_t*>( p ) = static_cast<uint32_t>( val );
+                break;
+            default:
+                ASSERT_TRUE( false, "Unexpected prop type" );
+        }
     }
 
-    void prop_decode_svarint( bitstream& b, fs_info* f, property* p ) {
-        p->data.u64 = b.readVarSInt64();
-        p->type = property::V_INT64;
+    void prop_decode_svarint( bitstream& b, const fs_info* f, void* p ) {
+        auto val = b.readVarSInt64();
+        switch ( f->type ) {
+            case PropertyType::INT64:
+                *reinterpret_cast<int64_t*>( p ) = val;
+                break;
+            case PropertyType::INT32:
+                *reinterpret_cast<int32_t*>( p ) = static_cast<int32_t>( val );
+                break;
+            default:
+                ASSERT_TRUE( false, "Unexpected prop type" );
+        }
     }
 
-    void prop_decode_resource( bitstream& b, fs_info* f, property* p ) {
+    void prop_decode_resource( const resource_manifest& m, bitstream& b, const fs_info* f, void* p ) {
         uint64_t idx = b.readVarUInt64();
 
-        p->data_str = "";
-        p->type = property::V_STRING;
+        *reinterpret_cast<std::string*>( p ) = idx != 0
+            ? m.resource_lookup(idx)
+            : "";
+    }
+
+    void DecodeProperty( const resource_manifest& m, PropertyDecoderType dt, bitstream& b, const fs_info* f, void* p ) {
+#define DECODE_PROPERTY_HANDLER( type, decoder ) case type: decoder( b, f, p ); break;
+        switch ( dt ) {
+            DECODE_PROPERTY_HANDLER(PropertyDecoderType::BOOL, prop_decode_bool);
+            DECODE_PROPERTY_HANDLER(PropertyDecoderType::FIXED64, prop_decode_fixed64);
+            DECODE_PROPERTY_HANDLER(PropertyDecoderType::VARUINT, prop_decode_varint);
+            DECODE_PROPERTY_HANDLER(PropertyDecoderType::VARINT, prop_decode_svarint);
+            DECODE_PROPERTY_HANDLER(PropertyDecoderType::COORD, prop_decode_coord);
+            DECODE_PROPERTY_HANDLER(PropertyDecoderType::FLOAT, prop_decode_float);
+            DECODE_PROPERTY_HANDLER(PropertyDecoderType::FLOAT_NO_DECODER, prop_decode_float_no_decoder);
+            DECODE_PROPERTY_HANDLER(PropertyDecoderType::SIMTIME, prop_decode_simtime);
+            DECODE_PROPERTY_HANDLER(PropertyDecoderType::VECTOR2, prop_decode_vector2d);
+            DECODE_PROPERTY_HANDLER(PropertyDecoderType::QANGLE_PITCH_YAW, prop_decode_qangle_pitch_yaw);
+            DECODE_PROPERTY_HANDLER(PropertyDecoderType::NORMALIZED_VECTOR, prop_decode_normal);
+            DECODE_PROPERTY_HANDLER(PropertyDecoderType::VECTOR, prop_decode_vector);
+            DECODE_PROPERTY_HANDLER(PropertyDecoderType::COORD_VECTOR, prop_decode_coord_vector);
+            DECODE_PROPERTY_HANDLER(PropertyDecoderType::QANGLE, prop_decode_qangle);
+            DECODE_PROPERTY_HANDLER(PropertyDecoderType::QUATERNION, prop_decode_quaternion);
+            DECODE_PROPERTY_HANDLER(PropertyDecoderType::STRING, prop_decode_string);
+            case PropertyDecoderType::RESOURCE:
+                prop_decode_resource( m, b, f, p );
+                break;
+            case PropertyDecoderType::TABLE:
+            case PropertyDecoderType::ARRAY:
+                b.readVarUInt64();
+                break;
+            case PropertyDecoderType::TABLE_PTR:
+                b.readBool();
+                break;
+            default:
+                ASSERT_TRUE( false, "Unknown decoder type" );
+        }
+#undef DECODE_PROPERTY_HANDLER
     }
 
     /* clang-format on */
-} /* butterfly */
+}  // namespace butterfly

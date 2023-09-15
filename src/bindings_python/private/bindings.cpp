@@ -304,23 +304,6 @@ PYBIND11_PLUGIN(butterpy) {
     /// property_decoder.hpp
     /// ----------------------------------------------------------------
 
-    m.def("prop_decode_bool", &prop_decode_bool, "Decode boolean from bitstream");
-    m.def("prop_decode_fixed64", &prop_decode_fixed64, "Decode integer as 64 bit little endian (fixed-width)");
-    m.def("prop_decode_coord", &prop_decode_coord, "Decode float coord");
-    m.def("prop_decode_dynamic", &prop_decode_dynamic, "Decode size property");
-    m.def("prop_decode_float", &prop_decode_float, "Decode float");
-    m.def("prop_decode_simtime", &prop_decode_simtime, "Decode simulation time");
-    m.def("prop_decode_normal", &prop_decode_normal, "Decode normalized float");
-    m.def("prop_decode_noscale", &prop_decode_noscale, "Decode standard float");
-    m.def("prop_decode_quantized", &prop_decode_quantized, "Decode quantized");
-    m.def("prop_decode_vector", &prop_decode_vector, "Decode vector");
-    m.def("prop_decode_qangle", &prop_decode_qangle, "Decode angle");
-    m.def("prop_decode_qangle_pitch_yawn", &prop_decode_qangle_pitch_yawn, "Decode angle (pitch and yawn only)");
-    m.def("prop_decode_string", &prop_decode_string, "Decode string");
-    m.def("prop_decode_varint", &prop_decode_varint, "Decode standard varint");
-    m.def("prop_decode_svarint", &prop_decode_svarint, "Decode standard varint (signed)");
-    m.def("prop_decode_resource", &prop_decode_resource, "Decodes resource string");
-
     /// ----------------------------------------------------------------
     /// property.hpp
     /// ----------------------------------------------------------------

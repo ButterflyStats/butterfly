@@ -19,12 +19,15 @@
  *    limitations under the License.
  */
 
-#include <butterfly/property.hpp>
+#include <butterfly/flattened_serializer.hpp>
 #include <butterfly/entity.hpp>
 
 #include "alloc.hpp"
 
 namespace butterfly {
-    object_pool<property> g_propalloc( 4096 );
+    object_pool<fs_typeinfo> g_fstypeinfoalloc( 4096 );
+    object_pool<fs_info> g_fsinfoalloc( 4096 );
+    object_pool<fs_table_data> g_fstabledataalloc( 4096 );
+    object_pool<fs> g_fsalloc( 64 * 1024 );
     object_pool<entity> g_entalloc( 2048 );
 }

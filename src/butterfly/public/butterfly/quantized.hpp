@@ -38,28 +38,34 @@ namespace butterfly {
             QFE_ROUNDDOWN               = ( 1 << 0 ),
             QFE_ROUNDUP                 = ( 1 << 1 ),
             QFE_ENCODE_ZERO_EXACTLY     = ( 1 << 2 ),
-            QFE_ENCODE_INTEGERS_EXACTLY = ( 1 << 3 )
+            QFE_ENCODE_INTEGERS_EXACTLY = ( 1 << 3 ),
         };
 
         /** Constructor, initialized the decoder */
-        quantized_float_decoder( uint8_t bc, uint8_t eflags, float min, float max )
-            : min( min ), max( max ), high_low_mul( 0.0f ), decode_mul( 0.0f ), bc( bc ), flags( 0 ),
-              encode_flags( eflags ), is_noscale( false ) {
+        quantized_float_decoder( uint8_t bc, uint8_t encode_flags, float min,
+                                 float max )
+            : min( min ),
+              max( max ),
+              high_low_mul( 0.f ),
+              decode_mul( 0.f ),
+              bc( bc ),
+              flags( 0 ),
+              is_noscale( false ) {
             // force noscale decoding
             if ( bc == 0 || bc >= 32 ) {
                 is_noscale = true;
                 return;
             }
 
-            validate_flags();
-            uint32_t steps = ( 1 << bc );
+            validate_flags( encode_flags );
+            uint32_t steps = 1 << bc;
 
             if ( flags & QFE_ROUNDDOWN ) {
                 float range = max - min;
-                max -= ( range / steps );
+                max -= range / steps;
             } else if ( flags & QFE_ROUNDUP ) {
                 float range = max - min;
-                min += ( range / steps );
+                min += range / steps;
             }
 
             if ( flags & QFE_ENCODE_INTEGERS_EXACTLY ) {
@@ -71,83 +77,76 @@ namespace butterfly {
                 int32_t range = ( 1 << iLog2 );
 
                 uint32_t iBits = bc;
-                while ( ( 1 << iBits ) < range ) {
-                    ++iBits;
-                }
+                while ( ( 1 << iBits ) < range ) ++iBits;
 
                 if ( iBits > bc ) {
                     bc    = iBits;
-                    steps = ( 1 << bc );
+                    steps = 1 << bc;
                 }
 
-                max = min + range - ( static_cast<float>( ( 1 << iDelta ) ) / static_cast<float>( steps ) );
+                max = min + range -
+                      ( static_cast<float>( ( 1 << iDelta ) ) /
+                        static_cast<float>( steps ) );
             }
 
             assign_multipliers( steps );
 
-            // Remove unessecary flags
-            if ( flags & QFE_ROUNDDOWN ) {
-                if ( quantize( min ) == min )
-                    flags &= ~QFE_ROUNDDOWN;
-            }
+            // Remove unnecessary flags
+            if ( ( flags & QFE_ROUNDDOWN ) && quantize( min ) == min )
+                flags &= ~QFE_ROUNDDOWN;
 
-            if ( flags & QFE_ROUNDUP ) {
-                if ( quantize( max ) == max )
-                    flags &= ~QFE_ROUNDUP;
-            }
+            if ( ( flags & QFE_ROUNDUP ) && quantize( max ) == max )
+                flags &= ~QFE_ROUNDUP;
 
-            if ( flags & QFE_ENCODE_ZERO_EXACTLY ) {
-                if ( quantize( 0.0f ) == 0.0f )
-                    flags &= ~QFE_ENCODE_ZERO_EXACTLY;
-            }
+            if ( ( flags & QFE_ENCODE_ZERO_EXACTLY ) && quantize( 0.f ) == 0.f )
+                flags &= ~QFE_ENCODE_ZERO_EXACTLY;
         }
 
-        /** Default destructor */
-        ~quantized_float_decoder() = default;
+        force_inline uint8_t bit_count() const { return bc; }
 
-        /** Return whether to decode this as noscale */
-        force_inline bool noscale() { return is_noscale; }
-
-        /** Set optimal decoding flags based on min / max value and encoding flags */
-        void validate_flags() {
+        /** Set optimal decoding flags based on min / max value and encoding
+         * flags */
+        force_inline void validate_flags( uint8_t encode_flags ) {
             flags = encode_flags;
 
-            if ( ( min == 0.0f && flags & QFE_ROUNDDOWN ) || ( max == 0.0f && flags & QFE_ROUNDUP ) ) {
+            if ( ( min == 0.0f && ( flags & QFE_ROUNDDOWN ) ) ||
+                 ( max == 0.0f && ( flags & QFE_ROUNDUP ) ) )
                 flags &= ~QFE_ENCODE_ZERO_EXACTLY;
-            }
 
-            if ( min == 0.0f && flags & QFE_ENCODE_ZERO_EXACTLY ) {
+            if ( min == 0.0f && ( flags & QFE_ENCODE_ZERO_EXACTLY ) ) {
                 flags |= QFE_ROUNDDOWN;
                 flags &= ~QFE_ENCODE_ZERO_EXACTLY;
             }
 
-            if ( max == 0.0f && flags & QFE_ENCODE_ZERO_EXACTLY ) {
+            if ( max == 0.0f && ( flags & QFE_ENCODE_ZERO_EXACTLY ) ) {
                 flags |= QFE_ROUNDUP;
                 flags &= ~QFE_ENCODE_ZERO_EXACTLY;
             }
 
-            bool needToTestZero = ( min < 0.0f && max > 0.0f );
-            if ( !needToTestZero ) {
+            if ( !( min < 0.0f && max > 0.0f ) )
                 flags &= ~QFE_ENCODE_ZERO_EXACTLY;
-            }
 
-            if ( flags & QFE_ENCODE_INTEGERS_EXACTLY ) {
-                flags &= ~( QFE_ROUNDUP | QFE_ROUNDDOWN | QFE_ENCODE_ZERO_EXACTLY );
-            }
+            if ( flags & QFE_ENCODE_INTEGERS_EXACTLY )
+                flags &=
+                    ~( QFE_ROUNDUP | QFE_ROUNDDOWN | QFE_ENCODE_ZERO_EXACTLY );
         }
 
         /** Assign multipliers */
         force_inline void assign_multipliers( uint32_t steps ) {
             float range      = max - min;
             uint32_t highVal = bc == 32 ? 0xFFFFFFFE : ( ( 1 << bc ) - 1 );
-            high_low_mul =
-                std::abs( range ) <= 0.0 ? static_cast<float>( highVal ) : static_cast<float>( highVal ) / range;
+            high_low_mul     = std::abs( range ) <= 0.0
+                                   ? static_cast<float>( highVal )
+                                   : static_cast<float>( highVal ) / range;
 
-            if ( ( uint32_t )( high_low_mul * range ) > highVal || ( high_low_mul * range ) > (double)highVal ) {
-                float multipliers[] = {0.9999f, 0.99f, 0.9f, 0.8f, 0.7f};
-                for ( auto mul : multipliers ) {
+            if ( static_cast<uint32_t>( high_low_mul * range ) > highVal ||
+                 ( high_low_mul * range ) > static_cast<double>( highVal ) ) {
+                for ( auto mul : { 0.9999f, 0.99f, 0.9f, 0.8f, 0.7f } ) {
                     high_low_mul = static_cast<float>( highVal / range ) * mul;
-                    if ( ( uint32_t )( high_low_mul * range ) > highVal || ( high_low_mul * range ) > (double)highVal )
+                    if ( static_cast<uint32_t>( high_low_mul * range ) >
+                             highVal ||
+                         ( high_low_mul * range ) >
+                             static_cast<double>( highVal ) )
                         continue;
                     break;
                 }
@@ -157,19 +156,28 @@ namespace butterfly {
         }
 
         /** Quantize a flot */
-        float quantize( float f ) {
-            if ( f < min ) {
+        float quantize( float f ) const {
+            if ( f < min )
                 return min;
-            } else if ( f > max ) {
+            else if ( f > max )
                 return max;
-            }
 
             uint32_t i = static_cast<uint32_t>( ( f - min ) * high_low_mul );
-            return min + ( max - min ) * ( (float)(i)*decode_mul );
+            return min +
+                   ( max - min ) * ( static_cast<float>( i ) * decode_mul );
         }
 
         /** Decode the float */
-        float decode( bitstream& b ) {
+        float decode( bitstream& b ) const {
+            if ( is_noscale ) {
+                union {
+                    uint32_t u32;
+                    float fl;
+                } u;
+                u.u32 = b.read( 32 );
+                return u.fl;
+            }
+
             if ( flags & QFE_ROUNDDOWN && b.readBool() )
                 return min;
 
@@ -177,10 +185,11 @@ namespace butterfly {
                 return max;
 
             if ( flags & QFE_ENCODE_ZERO_EXACTLY && b.readBool() )
-                return 0.0f;
+                return 0.f;
 
             uint32_t u = b.read( bc );
-            return min + ( max - min ) * ( static_cast<float>( u ) * decode_mul );
+            return min +
+                   ( max - min ) * ( static_cast<float>( u ) * decode_mul );
         }
 
     private:
@@ -196,11 +205,9 @@ namespace butterfly {
         uint8_t bc;
         /** Decoding flags */
         uint8_t flags : 4;
-        /** Networked flags */
-        uint8_t encode_flags : 4;
         /** Whether to decode as noscale */
-        bool is_noscale;
+        bool is_noscale : 1;
     };
-} /* butterfly */
+}  // namespace butterfly
 
 #endif /* BUTTERFLY_QUANTIZED_HPP */

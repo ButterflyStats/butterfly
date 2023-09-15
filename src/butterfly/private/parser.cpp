@@ -32,11 +32,9 @@
 #include <butterfly/dem.hpp>
 #include <butterfly/demfile.hpp>
 #include <butterfly/entity.hpp>
-#include <butterfly/entity_classes.hpp>
 #include <butterfly/flattened_serializer.hpp>
 #include <butterfly/packets.hpp>
 #include <butterfly/parser.hpp>
-#include <butterfly/property.hpp>
 #include <butterfly/stringtable.hpp>
 #include <butterfly/util_assert.hpp>
 #include <butterfly/util_chash.hpp>
@@ -144,7 +142,7 @@ namespace butterfly {
                 this->dem_handle_send_tables( p );
             break;
         case DEM_ClassInfo:
-            if ( !classes->size() )
+            if ( classes->size() == 0 )
                 this->dem_handle_class_info( p );
 
             if ( v )
@@ -272,11 +270,12 @@ namespace butterfly {
 
             // check if we can get to the seekpoint
             trigger = false;
-            float gtime = e->get( "m_pGameRules.m_fGameTime"_chash )->data.fl;
+            float gtime = e->get<float>( std::array<uint64_t, 2>{"m_pGameRules"_chash, "m_fGameTime"_chash} );
 
             if (time - gtime < 61) {
-                while (gtime < time) {
-                    gtime = e->get( "m_pGameRules.m_fGameTime"_chash )->data.fl;
+                while ( gtime < time ) {
+                    gtime = e->get<float>( std::array<uint64_t, 2>{
+                        "m_pGameRules"_chash, "m_fGameTime"_chash } );
                     parse( nullptr );
                 }
             }
@@ -343,7 +342,7 @@ namespace butterfly {
     void parser::dem_handle_packet( bitstream& bs, visitor* v ) {
         // Read packet data
         while ( bs.remaining() > 8 ) {
-            alignas( 8 ) char data[70000];
+            alignas( 8 ) char data[128 * 1024];
             uint32_t type = bs.readUBitVar();
             uint32_t size = bs.readVarUInt32();
 
@@ -419,10 +418,10 @@ namespace butterfly {
             ASSERT_TRUE( (unsigned)c.class_id() == classes->size(), "Invalid id skip" );
 
             classes->insert( c.class_id(), c.network_name(),
-                entity_classes::class_info{constexpr_hash_rt( c.network_name().c_str() ), 0} );
+                entity_classes::class_info{constexpr_hash_rt( c.network_name().c_str() ), ENT_DEFAULT} );
 
             /** Match prefix */
-            auto match = [&]( std::string m1, uint32_t t ) {
+            auto match = [&]( std::string m1, entity_types t ) {
                 if ( std::mismatch( m1.begin(), m1.end(), c.network_name().begin() ).first == m1.end() ) {
                     classes->by_index( c.class_id() )->type = t;
                 }
@@ -530,31 +529,29 @@ namespace butterfly {
                 }
 
                 // Create new
-                if ( !entities[idx] ) {
-                    entities[idx] = g_entalloc.malloc();
-                }
+                entities[idx] = g_entalloc.malloc( serializers->get( cls ) );
 
                 // Parse entity
+                auto& cls_data = classes.classes.by_index( cls );
                 entities[idx]->id       = idx;
                 entities[idx]->cls      = cls;
-                entities[idx]->cls_hash = classes.classes.by_index( cls )->hash;
-                entities[idx]->type     = classes.classes.by_index( cls )->type;
-                entities[idx]->set_serializer( &serializers->get( cls ) );
+                entities[idx]->cls_hash = cls_data->hash;
+                entities[idx]->type     = cls_data->type;
 
-                const std::string bkey = std::to_string(cls);
-                if (baselines.has_key(bkey) && !baselines.by_key(bkey).value.empty()) {
-                    bitstream b(baselines.by_key(bkey).value);
-                    entities[idx]->parse( b );
+                const std::string bkey = std::to_string( cls );
+                if ( baselines.has_key( bkey ) ) {
+                    bitstream b( baselines.by_key( bkey ).value );
+                    entities[idx]->parse( manifest, b );
                 }
 
-                entities[idx]->parse( b );
+                entities[idx]->parse( manifest, b );
 
                 // Emit event
                 if ( v ) v->on_entity( ENT_CREATED, entities[idx] );
             } break;
             case E_UPDATE: {
                 ASSERT_TRUE( entities[idx], "Unable to find entity in update" );
-                entities[idx]->parse( b );
+                entities[idx]->parse( manifest, b );
                 if ( v ) v->on_entity( ENT_UPDATED, entities[idx] );
             } break;
             case E_LEAVE: {

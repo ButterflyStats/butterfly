@@ -39,17 +39,18 @@ public:
 
         // Looking at a hero
         if (e->type == ENT_HERO) {
-            int64_t pid = e->get("m_iPlayerID"_chash)->data.i32;
+            int64_t pid = e->get<uint32_t>("m_iPlayerID"_chash);
 
             // illu?
-            if (e->get("m_hReplicatingOtherHeroModel")->data.u32 != 16777215)
+            if (e->get<uint32_t>("m_hReplicatingOtherHeroModel"_chash) != 16777215)
                 return;
 
-            if (!dead.at(pid) && e->get("m_lifeState")->data.u32 == 1) {
+            auto lifestate = e->get<uint32_t>("m_lifeState"_chash);
+            if (!dead.at(pid) && lifestate == 1) {
                 std::cout << "Player "  << " (" << pid << ") has died, game tick: " << p->tick
                     << ", Hero: " << p->classes->by_index(e->cls).key << std::endl;
                 dead.at(pid) = 1;
-            } else if (e->get("m_lifeState")->data.u32 != 1) {
+            } else if (lifestate != 1) {
                 dead.at(pid) = 0;
             }
         }
