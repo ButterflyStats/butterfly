@@ -223,7 +223,7 @@ namespace butterfly {
 
                     switch ( type ) {
                     case svc_CreateStringTable:
-                        ASSERT_GREATER( 1000, size, "Message doesn't fit data buffer" );
+                        ASSERT_GREATER_EQ( 1000, size, "Message doesn't fit data buffer" );
                         bs.readBytes( data, size );
                         this->svc_handle_stringtable_create( data, size );
                         break;
@@ -328,14 +328,14 @@ namespace butterfly {
 
         // Packet contents: Size as varint, Serialized Flattables buffer
         const std::string& buf = proto.data();
-        ASSERT_GREATER( buf.size(), 10, "Sendtables packet corrupt" );
+        ASSERT_GREATER_EQ( buf.size(), 10, "Sendtables packet corrupt" );
 
         // Read size and verify that we have enough bytes remaining
         uint32_t size, psize;
         uint8_t* data = read_varint32_fast( (uint8_t*)buf.c_str(), size );
         psize         = data - (uint8_t*)buf.c_str();
 
-        ASSERT_GREATER( buf.size() - psize, size, "Sendtables packet corrupt" );
+        ASSERT_GREATER_EQ( buf.size() - psize, size, "Sendtables packet corrupt" );
         this->serializers = new flattened_serializer( data, size );
     }
 
@@ -346,7 +346,7 @@ namespace butterfly {
             uint32_t type = bs.readUBitVar();
             uint32_t size = bs.readVarUInt32();
 
-            ASSERT_GREATER( 70000, size, "Message doesn't fit data buffer" );
+            ASSERT_LESS( size, sizeof(data), "Message doesn't fit data buffer" );
 
             switch ( type ) {
             case svc_CreateStringTable:
@@ -403,7 +403,7 @@ namespace butterfly {
 
         // Map all class_ids to their network_name
         for ( auto& c : proto.classes() ) {
-            ASSERT_TRUE( (unsigned)c.class_id() == classes.classes.size(), "Invalid id skip" );
+            ASSERT_TRUE( (unsigned)c.class_id() == classes->size(), "Invalid id skip" );
 
             classes->insert( c.class_id(), c.network_name(),
                 entity_classes::class_info{constexpr_hash_rt( c.network_name().c_str() ), 0} );

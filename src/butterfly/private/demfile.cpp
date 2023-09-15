@@ -45,7 +45,7 @@ namespace butterfly {
         dataSize = ftell( fp ) - fstart;
         fseek( fp, 0, SEEK_SET );
 
-        ASSERT_GREATER( dataSize, sizeof( dem_header ), "File to small" );
+        ASSERT_GREATER_EQ( dataSize, sizeof( dem_header ), "File to small" );
 
         // read everything into the buffer
         data = new char[dataSize + 1];
@@ -92,7 +92,7 @@ namespace butterfly {
         if ( ret.type & DEM_IsCompressed ) {
             dem_uncompress( ret, dataSnappy, BUTTERFLY_SNAPPY_BUFFER_SIZE );
 
-            ASSERT_LESS( ret.type, DEM_Max, "Unkown demo packet received" );
+            ASSERT_LESS( ret.type, DEM_Max, "Unknown demo packet received" );
         }
 
         if ( pcb ) {
@@ -123,7 +123,7 @@ namespace butterfly {
 
         if ( pkg.type & DEM_IsCompressed ) {
             dem_uncompress( pkg, dataSnappy, BUTTERFLY_SNAPPY_BUFFER_SIZE );
-            ASSERT_LESS( pkg.type, DEM_Max, "Unkown demo packet received" );
+            ASSERT_LESS( pkg.type, DEM_Max, "Unknown demo packet received" );
         }
 
         ASSERT_TRUE( pkg.type == DEM_FileInfo, "Unkown packet at summary offset" );

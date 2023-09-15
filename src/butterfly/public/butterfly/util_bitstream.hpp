@@ -73,7 +73,7 @@ namespace butterfly {
         /** Creates a bitstream from an existing buffer */
         bitstream( const std::string& str ) : pos{0}, size{str.size() << 3}, owns{true} {
             // Check size requirements
-            ASSERT_LESS( size, 0xffffffff, "Bitstream to large" );
+            ASSERT_LESS_EQ( size, 0xffffffff, "Bitstream to large" );
 
             // Reserve the memory in beforehand so we can just memcpy everything
             data = new uint32_t[( str.size() + 3 ) / 4 + 1];
@@ -136,8 +136,8 @@ namespace butterfly {
          */
         force_inline uint32_t read( const size_type n ) {
             // make sure the data read fits the return type
-            ASSERT_LESS( n, size - pos, "Bitstream overflow" );
-            ASSERT_LESS( n, 33, "Trying to read more than 32 bits" );
+            ASSERT_LESS_EQ( n, size - pos, "Bitstream overflow" );
+            ASSERT_LESS_EQ( n, 32, "Trying to read more than 32 bits" );
 
             static constexpr uint32_t bitSize = sizeof( uint32_t ) << 3; // size of chunk in bits
             const uint32_t start              = pos >> 5;                // current active chunk

@@ -67,14 +67,14 @@ int spew_types(butterfly::dem_packet &p) {
 
     // Packet contents: Size as varint, Serialized Flattables buffer
     const std::string& buf = proto.data();
-    ASSERT_GREATER( buf.size(), 10, "Sendtables packet corrupt" );
+    ASSERT_GREATER_EQ( buf.size(), 10, "Sendtables packet corrupt" );
 
     // Read size and verify that we have enough bytes remaining
     uint32_t size, psize;
     uint8_t* data = read_varint32_fast( (uint8_t*)buf.c_str(), size );
     psize         = data - (uint8_t*)buf.c_str();
 
-    ASSERT_GREATER( buf.size() - psize, size, "Sendtables packet corrupt" );
+    ASSERT_GREATER_EQ( buf.size() - psize, size, "Sendtables packet corrupt" );
 
     CSVCMsg_FlattenedSerializer serializers;
     ASSERT_TRUE( serializers.ParseFromArray( data, size ), "Unable to parse buffer as FlattenedSerializer packet" );

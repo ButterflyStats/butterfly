@@ -301,7 +301,7 @@ namespace butterfly {
         /** Prints a seperator line */
         template <typename T>
         void print_seperator( uint32_t len, T &out ) {
-            ASSERT_GREATER( len, 2, "Table to small" );
+            ASSERT_GREATER_EQ( len, 2, "Table too small" );
 
             out << "+";
             for ( uint32_t i = 0; i < ( len - 2 ); ++i ) {

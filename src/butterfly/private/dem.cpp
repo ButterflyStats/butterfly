@@ -38,7 +38,7 @@ namespace butterfly {
         ASSERT_TRUE( snappy::IsValidCompressedBuffer( data, msg.size ), "Invalid snappy compression buffer" );
         ASSERT_TRUE(
             snappy::GetUncompressedLength( data, msg.size, &size_uncompressed ), "Unable to get uncompressed length" );
-        ASSERT_GREATER( buffer_size, size_uncompressed, "Can't fit uncompressed data into Buffer" );
+        ASSERT_GREATER_EQ( buffer_size, size_uncompressed, "Can't fit uncompressed data into Buffer" );
         ASSERT_TRUE( snappy::RawUncompress( data, msg.size, buffer ), "Failed to decompress data" );
 
         msg.type = msg.type & ~DEM_IsCompressed;
