@@ -80,25 +80,19 @@ namespace butterfly {
         props.clear();
         fp.reset();
 
-        fieldop* op = nullptr;
-        uint32_t id = 0;
-
         while ( true ) {
             // Read op
-            id = 0;
-            op = nullptr;
+            bool op_found = false;
+            bool finished = false;
 
-            for ( uint32_t i = 0; i < 17 && !op; ++i ) {
+            for ( uint32_t i = 0, id = 0; !op_found && i < 17; ++i ) {
                 id = ( id << 1 ) | b.readBool();
-                op = fieldop_lookup( id );
+                fieldop_lookup( id, b, fp, op_found, finished );
             }
 
-            ASSERT_TRUE( op, "Exhausted max operation bits" );
+            ASSERT_TRUE( op_found, "Exhausted max operation bits" );
 
-            // Invoke op
-            op->fp( b, fp );
-
-            if ( fp.finished )
+            if ( finished )
                 break;
 
             auto& d = fp.data;

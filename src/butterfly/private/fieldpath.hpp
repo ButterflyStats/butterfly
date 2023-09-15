@@ -29,18 +29,15 @@
 namespace butterfly {
     /** Type for a source 2 fieldpath */
     struct fieldpath {
-        fieldpath() : data( {-1} ), finished( false ) { data.reserve( 6 ); }
+        fieldpath() : data( {-1} ) { data.reserve( 6 ); }
 
         /** Fieldpath indicies */
         std::vector<int32_t> data;
-        /** Marks last path in header */
-        bool finished;
 
         /** Reset fieldpath */
         void reset() {
             data.clear();
             data.push_back( -1 );
-            finished = false;
         }
 
         /** Dump fieldpath */

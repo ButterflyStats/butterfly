@@ -15,7 +15,6 @@ SET ( BUTTERFLY_SOURCES
     ${BUTTERFLY_SRC}/dem.cpp
     ${BUTTERFLY_SRC}/demfile.cpp
     ${BUTTERFLY_SRC}/entity.cpp
-    ${BUTTERFLY_SRC}/fieldpath_huffman.cpp
     ${BUTTERFLY_SRC}/flattened_serializer.cpp
     ${BUTTERFLY_SRC}/parser.cpp
     ${BUTTERFLY_SRC}/particle.cpp

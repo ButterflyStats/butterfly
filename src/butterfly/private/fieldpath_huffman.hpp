@@ -29,110 +29,59 @@
 
 #include "fieldpath.hpp"
 #include "fieldpath_operations.hpp"
-#include "util_huffman.hpp"
 
 namespace butterfly {
-    /** Field operation type */
-    struct fieldop {
-        /** Fieldpath name */
-        const char* name;
-        /** Pointer to operation */
-        void ( *fp )( bitstream& b, fieldpath& f );
-        /** Weight */
-        uint32_t weight;
-    };
-
-    /** Global list of fieldpath operations */
-    extern std::vector<fieldop> fieldpath_operations;
-
-    /** Fieldop Huffman-Coding type */
-    typedef huffman<fieldop> fieldop_huffman;
-
-    /** Static fieldpath lookup */
-    force_inline fieldop* fieldop_lookup( uint32_t id ) {
-        switch ( id ) {
-        case 0: // PlusOne
-            return &fieldpath_operations[0];
-        case 2: // FieldPathEncodeFinish
-            return &fieldpath_operations[39];
-        case 14: // PlusTwo
-            return &fieldpath_operations[1];
-        case 15: // PushOneLeftDeltaNRightNonZeroPack6Bits
-            return &fieldpath_operations[11];
-        case 24: // PushOneLeftDeltaOneRightNonZero
-            return &fieldpath_operations[8];
-        case 26: // PlusN
-            return &fieldpath_operations[4];
-        case 50: // PlusThree
-            return &fieldpath_operations[2];
-        case 51: // PopAllButOnePlusOne
-            return &fieldpath_operations[29];
-        case 217: // PushOneLeftDeltaNRightNonZero
-            return &fieldpath_operations[10];
-        case 218: // PushOneLeftDeltaOneRightZero
-            return &fieldpath_operations[7];
-        case 220: // PushOneLeftDeltaNRightZero
-            return &fieldpath_operations[9];
-        case 222: // PopAllButOnePlusNPack6Bits
-            return &fieldpath_operations[32];
-        case 223: // PlusFour
-            return &fieldpath_operations[3];
-        case 432: // PopAllButOnePlusN
-            return &fieldpath_operations[30];
-        case 438: // PushOneLeftDeltaNRightNonZeroPack8Bits
-            return &fieldpath_operations[12];
-        case 439: // NonTopoPenultimatePlusOne
-            return &fieldpath_operations[37];
-        case 442: // PopAllButOnePlusNPack3Bits
-            return &fieldpath_operations[31];
-        case 443: // PushNAndNonTopological
-            return &fieldpath_operations[26];
-        case 866: // NonTopoComplexPack4Bits
-            return &fieldpath_operations[38];
-        case 1735: // NonTopoComplex
-            return &fieldpath_operations[36];
-        case 3469: // PushOneLeftDeltaZeroRightZero
-            return &fieldpath_operations[5];
-        case 27745: // PopOnePlusOne
-            return &fieldpath_operations[27];
-        case 27749: // PushOneLeftDeltaZeroRightNonZero
-            return &fieldpath_operations[6];
-        case 55488: // PopNAndNonTopographical
-            return &fieldpath_operations[35];
-        case 55489: // PopNPlusN
-            return &fieldpath_operations[34];
-        case 55492: // PushN
-            return &fieldpath_operations[25];
-        case 55493: // PushThreePack5LeftDeltaN
-            return &fieldpath_operations[24];
-        case 55494: // PopNPlusOne
-            return &fieldpath_operations[33];
-        case 55495: // PopOnePlusN
-            return &fieldpath_operations[28];
-        case 55496: // PushTwoLeftDeltaZero
-            return &fieldpath_operations[13];
-        case 110994: // PushThreeLeftDeltaZero
-            return &fieldpath_operations[15];
-        case 110995: // PushTwoPack5LeftDeltaZero
-            return &fieldpath_operations[14];
-        case 111000: // PushTwoLeftDeltaN
-            return &fieldpath_operations[21];
-        case 111001: // PushThreePack5LeftDeltaOne
-            return &fieldpath_operations[20];
-        case 111002: // PushThreeLeftDeltaN
-            return &fieldpath_operations[23];
-        case 111003: // PushTwoPack5LeftDeltaN
-            return &fieldpath_operations[22];
-        case 111004: // PushTwoLeftDeltaOne
-            return &fieldpath_operations[17];
-        case 111005: // PushThreePack5LeftDeltaZero
-            return &fieldpath_operations[16];
-        case 111006: // PushThreeLeftDeltaOne
-            return &fieldpath_operations[19];
-        case 111007: // PushTwoPack5LeftDeltaOne
-            return &fieldpath_operations[18];
-        default:
-            return nullptr;
+    force_inline void fieldop_lookup( uint32_t id, bitstream& b, fieldpath& fp, bool& op_found, bool& finished ) {
+        op_found = true;
+        finished = false;
+        switch (id) {
+#define FP_CASE(id, func) case id: func(b, fp); break
+            FP_CASE(0, fp_PlusOne);
+            case 2: // fp_FieldPathEncodeFinish
+                finished = true;
+                break;
+            FP_CASE(14, fp_PlusTwo);
+            FP_CASE(15, fp_PushOneLeftDeltaNRightNonZeroPack6Bits);
+            FP_CASE(24, fp_PushOneLeftDeltaOneRightNonZero);
+            FP_CASE(26, fp_PlusN);
+            FP_CASE(50, fp_PlusThree);
+            FP_CASE(51, fp_PopAllButOnePlusOne);
+            FP_CASE(217, fp_PushOneLeftDeltaNRightNonZero);
+            FP_CASE(218, fp_PushOneLeftDeltaOneRightZero);
+            FP_CASE(220, fp_PushOneLeftDeltaNRightZero);
+            FP_CASE(222, fp_PopAllButOnePlusNPack6Bits);
+            FP_CASE(223, fp_PlusFour);
+            FP_CASE(432, fp_PopAllButOnePlusN);
+            FP_CASE(438, fp_PushOneLeftDeltaNRightNonZeroPack8Bits);
+            FP_CASE(439, fp_NonTopoPenultimatePlusOne);
+            FP_CASE(442, fp_PopAllButOnePlusNPack3Bits);
+            FP_CASE(443, fp_PushNAndNonTopological);
+            FP_CASE(866, fp_NonTopoComplexPack4Bits);
+            FP_CASE(1735, fp_NonTopoComplex);
+            FP_CASE(3469, fp_PushOneLeftDeltaZeroRightZero);
+            FP_CASE(27745, fp_PopOnePlusOne);
+            FP_CASE(27749, fp_PushOneLeftDeltaZeroRightNonZero);
+            FP_CASE(55488, fp_PopNAndNonTopological);
+            FP_CASE(55489, fp_PopNPlusN);
+            FP_CASE(55492, fp_PushN);
+            FP_CASE(55493, fp_PushThreePack5LeftDeltaN);
+            FP_CASE(55494, fp_PopNPlusOne);
+            FP_CASE(55495, fp_PopOnePlusN);
+            FP_CASE(55496, fp_PushTwoLeftDeltaZero);
+            FP_CASE(110994, fp_PushThreeLeftDeltaZero);
+            FP_CASE(110995, fp_PushTwoPack5LeftDeltaZero);
+            FP_CASE(111000, fp_PushTwoLeftDeltaN);
+            FP_CASE(111001, fp_PushThreePack5LeftDeltaOne);
+            FP_CASE(111002, fp_PushThreeLeftDeltaN);
+            FP_CASE(111003, fp_PushTwoPack5LeftDeltaN);
+            FP_CASE(111004, fp_PushTwoLeftDeltaOne);
+            FP_CASE(111005, fp_PushThreePack5LeftDeltaZero);
+            FP_CASE(111006, fp_PushThreeLeftDeltaOne);
+            FP_CASE(111007, fp_PushTwoPack5LeftDeltaOne);
+#undef FP_CASE
+            default:
+                op_found = false;
+                break;
         }
     }
 } /* butterfly */

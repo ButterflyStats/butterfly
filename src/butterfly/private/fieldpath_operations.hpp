@@ -152,16 +152,12 @@ namespace butterfly {
 
     void force_inline fp_PushThreePack5LeftDeltaOne(bitstream &b, fieldpath &f) {
         f.data.back() += 1;
-        f.data.push_back(b.read(5));
-        f.data.push_back(b.read(5));
-        f.data.push_back(b.read(5));
+        fp_PushThreePack5LeftDeltaZero(b, f);
     }
 
     void force_inline fp_PushThreePack5LeftDeltaN(bitstream &b, fieldpath &f) {
         f.data.back() += b.readUBitVar() + 2;
-        f.data.push_back(b.read(5));
-        f.data.push_back(b.read(5));
-        f.data.push_back(b.read(5));
+        fp_PushThreePack5LeftDeltaZero(b, f);
     }
 
     void force_inline fp_PushN(bitstream &b, fieldpath &f) {
@@ -175,7 +171,7 @@ namespace butterfly {
 
     void force_inline fp_PushNAndNonTopological(bitstream &b, fieldpath &f) {
         for (auto &idx : f.data) {
-            if (b.read(1)) idx += b.readVarSInt32() + 1;
+            if (b.readBool()) idx += b.readVarSInt32() + 1;
         }
 
         uint32_t n = b.readUBitVar();
@@ -214,37 +210,30 @@ namespace butterfly {
         f.data.back() += b.read(6) + 1;
     }
 
-    void force_inline fp_PopNPlusOne(bitstream &b, fieldpath &f) {
-        uint32_t nsize = f.data.size() - b.readFPBitVar();
-        ASSERT_TRUE(nsize < 7 && nsize > 0,  "Invalid fp size for op");
+    void force_inline ApplyPopN(bitstream &b, fieldpath &f) {
+        int32_t n = b.readFPBitVar();
+        ASSERT_TRUE(f.data.size() >= n, "Invalid fp size for op");
 
-        f.data.resize(nsize);
+        f.data.resize(std::max(f.data.size(), 1 + static_cast<size_t>(n)) - n);
+    }
+    void force_inline fp_PopNPlusOne(bitstream &b, fieldpath &f) {
+        ApplyPopN(b, f);
         f.data.back() += 1;
     }
 
     void force_inline fp_PopNPlusN(bitstream &b, fieldpath &f) {
-        uint32_t nsize = f.data.size() - b.readFPBitVar();
-        ASSERT_TRUE(nsize < 7 && nsize > 0,  "Invalid fp size for op");
-
-        f.data.resize(nsize);
+        ApplyPopN(b, f);
         f.data.back() += b.readVarSInt32();
-    }
-
-    void force_inline fp_PopNAndNonTopographical(bitstream &b, fieldpath &f) {
-        uint32_t nsize = f.data.size() - b.readFPBitVar();
-        ASSERT_TRUE(nsize < 7 && nsize > 0,  "Invalid fp size for op");
-
-        f.data.resize(nsize);
-
-        for (auto &idx : f.data) {
-            if (b.read(1)) idx += b.readVarSInt32();
-        }
     }
 
     void force_inline fp_NonTopoComplex(bitstream &b, fieldpath &f) {
         for (auto &idx : f.data) {
-            if (b.read(1)) idx += b.readVarSInt32();
+            if (b.readBool()) idx += b.readVarSInt32();
         }
+    }
+    void force_inline fp_PopNAndNonTopological(bitstream &b, fieldpath &f) {
+        ApplyPopN(b, f);
+        fp_NonTopoComplex(b, f);
     }
 
     void force_inline fp_NonTopoPenultimatePlusOne(bitstream &b, fieldpath &f) {
@@ -254,12 +243,9 @@ namespace butterfly {
 
     void force_inline fp_NonTopoComplexPack4Bits(bitstream &b, fieldpath &f) {
         for (auto &idx : f.data) {
-            if (b.read(1)) idx += b.read(4) - 7;
+            if (b.readBool())
+                idx += static_cast<int32_t>(b.read(4)) - 7; // signed 4 bits addition by using hack
         }
-    }
-
-    void force_inline fp_FieldPathEncodeFinish(bitstream &b, fieldpath &f) {
-        f.finished = true;
     }
     /* clang-format on */
 } /* butterfly */
