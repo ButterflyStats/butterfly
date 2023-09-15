@@ -74,11 +74,12 @@ namespace butterfly {
         std::lock_guard<std::mutex> lock( mut );
 #endif /* BUTTERFLY_THREADSAFE */
 
-        static fieldpath fp;
         static std::vector<const fs*> props( 1024 );
 
         props.clear();
-        fp.reset();
+
+        fieldpath fp;
+        fp.push_back( -1 );
 
         while ( true ) {
             // Read op
@@ -95,16 +96,14 @@ namespace butterfly {
             if ( finished )
                 break;
 
-            auto& d = fp.data;
-
             /* clang-format off */
-            switch (d.size()) {
-                case 1: props.push_back(&(*ser)[d[0]]); break;
-                case 2: props.push_back(&(*ser)[d[0]][d[1]]); break;
-                case 3: props.push_back(&(*ser)[d[0]][d[1]][d[2]]); break;
-                case 4: props.push_back(&(*ser)[d[0]][d[1]][d[2]][d[3]]); break;
-                case 5: props.push_back(&(*ser)[d[0]][d[1]][d[2]][d[3]][d[4]]); break;
-                case 6: props.push_back(&(*ser)[d[0]][d[1]][d[2]][d[3]][d[4]][d[5]]); break;
+            switch (fp.size()) {
+                case 1: props.push_back(&(*ser)[fp[0]]); break;
+                case 2: props.push_back(&(*ser)[fp[0]][fp[1]]); break;
+                case 3: props.push_back(&(*ser)[fp[0]][fp[1]][fp[2]]); break;
+                case 4: props.push_back(&(*ser)[fp[0]][fp[1]][fp[2]][fp[3]]); break;
+                case 5: props.push_back(&(*ser)[fp[0]][fp[1]][fp[2]][fp[3]][fp[4]]); break;
+                case 6: props.push_back(&(*ser)[fp[0]][fp[1]][fp[2]][fp[3]][fp[4]][fp[5]]); break;
                 default: ASSERT_TRUE( 0 != 0, "Invalid fieldpath depth");
             }
             /* clang-format on */
