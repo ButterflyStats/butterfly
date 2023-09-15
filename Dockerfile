@@ -1,19 +1,19 @@
 FROM debian:bookworm-slim
 
-RUN apt-get update && apt-get install -y \
-	gcc \
-	build-essential \
-	cmake \
-	libsnappy-dev \
-	libprotobuf-dev \
-	protobuf-compiler
+RUN set -eux; \
+	apt-get update; \
+	apt-get install -y --no-install-recommends \
+		gcc \
+		build-essential \
+		cmake \
+		ninja-build \
+		libsnappy-dev \
+		libprotobuf-dev \
+		protobuf-compiler
 
 COPY . /butterfly
 
 WORKDIR /butterfly
 
-RUN mkdir build && \
-	cd build && \
-	cmake -DWITH_EXAMPLES=1 -DWITH_TOOLS=1 .. && \
-	make -j && \
-	make install
+RUN cmake -B build/ -GNinja -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=1 -DWITH_TOOLS=1 && \
+	ninja -C build install all
