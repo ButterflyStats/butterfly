@@ -166,6 +166,7 @@ namespace butterfly {
 
     void force_inline fp_PushN(bitstream &b, fieldpath &f) {
         uint32_t n = b.readUBitVar();
+        f.data.back() += b.readUBitVar();
 
         for (uint32_t i = 0; i < n; ++i) {
             f.data.push_back(b.readFPBitVar());
