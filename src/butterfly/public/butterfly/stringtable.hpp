@@ -35,8 +35,19 @@ namespace butterfly {
     /** Networked stringtable containing a set of keys and values. */
     class stringtable {
     public:
+        /** Structure for a single entry */
+        struct entry_t {
+            /** Name of entry */
+            std::string name;
+            /** Value */
+            std::string value;
+
+            entry_t(std::string name, std::string value)
+                : name( std::move( name ) ), value( std::move( value ) ) {}
+        };
+
         /** Type of multiindex container */
-        typedef dict<std::string> container;
+        typedef std::vector<entry_t> container;
         /** Size type of said container */
         typedef container::size_type size_type;
         /** Value type */
@@ -60,23 +71,31 @@ namespace butterfly {
 
         /** Return number of elements stored in the stringtable */
         size_type size() { return table.size(); }
-
+        
         /** Returns true if key exists */
-        bool has_key( const std::string& key ) { return table.has_key( key ); }
+        bool has_key( const std::string& key ) {
+            for ( auto& e : table )
+                if ( e.name == key )
+                    return true;
+            return false;
+        }
 
         /** Return entry by key */
-        const value_type& by_key( const std::string& key ) {
-            ASSERT_TRUE( table.has_key( key ), "Trying to fetch unkown key" );
-            return table.by_key( key );
+        const value_type& by_key(const std::string& key) {
+            for ( auto& e : table )
+                if ( e.name == key )
+                    return e;
+            ASSERT_TRUE( false, "Trying to fetch unknown key" );
+            return table[0];
         }
 
         /** Retruns true if index exists */
-        bool has_index( uint32_t idx ) { return table.has_index( idx ); }
+        bool has_index( uint32_t idx ) { return table.size() > idx; }
 
         /** Return entry by index */
         const value_type& by_index( uint32_t idx ) {
-            ASSERT_TRUE( table.has_index( idx ), "Trying to fetch unkown key" );
-            return table.by_index( idx );
+            ASSERT_LESS( idx, table.size(), "Trying to fetch unkown key" );
+            return table[idx];
         }
 
         /** Remove all entries */

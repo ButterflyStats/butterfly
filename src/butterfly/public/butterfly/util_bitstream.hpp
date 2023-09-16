@@ -58,9 +58,6 @@ namespace butterfly {
     };
     /* clang-format on */
 
-    /** Return int with bit set at given position */
-    static constexpr uint64_t bit_at( uint8_t bit ) { return ( 1 << bit ); }
-
     /** Read-Only bitstream implementation */
     class bitstream {
     public:
@@ -174,8 +171,9 @@ namespace butterfly {
         }
 
         /** Reads a boolean */
-        bool readBool() {
-            bool ret = ( data[pos >> 5] & bit_at( pos & 31 ) );
+        force_inline bool readBool() {
+            ASSERT_LESS_EQ(1, size - pos, "Bitstream overflow");
+            bool ret = ( data[pos >> 5] & ( 1 << ( pos & 31 ) ) ) != 0;
             pos += 1;
 
             return ret;
@@ -235,31 +233,41 @@ namespace butterfly {
         }
 
         /**
-         * Reads a null-terminated string into the buffer, stops once it reaches \0 or n chars.
+         * Reads a null-terminated string into the buffer, stops once it reaches \0.
          *
          * n is treated as the number of bytes to be read.
          * n can be arbitrarily large in this context. The underlying read method throws in case an overflow
          * happens.
          */
-        void readString( char* buffer, const size_type n ) {
-            if ( ( pos & 7 ) == 0 ) {
-                uint8_t* cbuf = (uint8_t*)&data[0] + ( pos >> 3 );
-
-                for ( std::size_t i = 0; i < n; ++i ) {
-                    buffer[i] = ( cbuf[i] );
-
-                    if ( buffer[i] == '\0' ) {
-                        pos += i * 8 + 8;
-                        break;
-                    }
-                }
-            } else {
-                for ( std::size_t i = 0; i < n; ++i ) {
-                    buffer[i] = static_cast<char>( read( 8 ) );
-
-                    if ( buffer[i] == '\0' )
-                        break;
-                }
+        size_t readString( char* buffer, const size_t n ) {
+            ASSERT_GREATER( n, 0, "" );
+            size_t i = 0;
+            while ( true ) {
+                char val = static_cast<char>( read( 8 ) );
+                if (val == '\0')
+                    break;
+                if ( i < ( n - 1 ) )
+                    buffer[i++] = val;
+            }
+            buffer[i] = '\0';
+            return i;
+        }
+        
+        /**
+         * Reads a null-terminated string into the buffer, stops once it reaches \0.
+         *
+         * n is treated as the buffer capacity.
+         * n can be arbitrarily large in this context. The underlying read method throws in case an overflow
+         * happens.
+         */
+        void readString( std::string& buffer, const size_t n ) {
+            ASSERT_GREATER( n, 0, "" );
+            while ( true ) {
+                char val = static_cast<char>( read( 8 ) );
+                if (val == '\0')
+                    break;
+                if ( buffer.size() < ( n - 1 ) )
+                    buffer.push_back(val);
             }
         }
 
@@ -286,16 +294,13 @@ namespace butterfly {
         void readBytes( char* buffer, const size_type n ) {
             // optimization if byte aligned
             if ( ( pos & 7 ) == 0 ) {
+                ASSERT_LESS_EQ( n * 8, remaining(), "Bitstream overflow" );
                 uint8_t* cbuf = (uint8_t*)&data[0];
                 memcpy( buffer, &cbuf[( pos >> 3 )], n );
                 pos += n * 8;
-
-                return;
-            }
-
-            for ( uint32_t i = 0; i < n; ++i ) {
-                buffer[i] = read( 8 );
-            }
+            } else
+                for ( uint32_t i = 0; i < n; ++i )
+                    buffer[i] = read( 8 );
         }
 
         /** Reads a ubitvar, valve's own variable-length integer encoding. */

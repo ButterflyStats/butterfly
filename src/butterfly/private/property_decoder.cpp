@@ -218,8 +218,8 @@ namespace butterfly {
 
     void prop_decode_string( bitstream& b, fs_info* f, property* p ) {
         char buffer[1024];
-        b.readString( buffer, 1024 );
-        p->data_str = std::string(buffer);
+        size_t size = b.readString( buffer, 1024 );
+        p->data_str.assign( buffer, size );
         p->type = property::V_STRING;
     }
 
