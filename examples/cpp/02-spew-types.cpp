@@ -27,6 +27,7 @@
 #include <string>
 #include <cstdio>
 #include <cstdint>
+#include <set>
 
 #include <butterfly/proto/demo.pb.h>
 #include <butterfly/proto/netmessages.pb.h>
@@ -79,19 +80,23 @@ int spew_types(butterfly::dem_packet &p) {
     CSVCMsg_FlattenedSerializer serializers;
     ASSERT_TRUE( serializers.ParseFromArray( data, size ), "Unable to parse buffer as FlattenedSerializer packet" );
 
+    std::set<std::string> uniq_types;
     for (auto &ser : serializers.serializers()) {
         for (auto &f : ser.fields_index()) {
-            std::string type = serializers.symbols(serializers.fields(f).var_type_sym());
-            printf("%s\n", type.c_str());
+            auto &type = serializers.symbols(serializers.fields(f).var_type_sym());
+            uniq_types.insert(type);
         }
     }
+
+    for (auto &type : uniq_types)
+        std::cout << type << std::endl;
 
     return 0;
 }
 
 int main(int argc, char** argv) {
     if (argc != 2) {
-        printf("Usage: 02-spit-types <replay>\n");
+        std::cerr << "Usage: 02-spit-types <replay>" << std::endl;
         return 1;
     }
 
@@ -104,7 +109,7 @@ int main(int argc, char** argv) {
         case DEM_SendTables:
             return spew_types(p);
         case DEM_Stop:
-            printf("Error: Reached EOF before SendTables packet.\n");
+            std::cerr << "Error: Reached EOF before SendTables packet." << std::endl;
             break;
         }
     }
