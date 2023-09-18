@@ -96,12 +96,12 @@ namespace butterfly {
 
         // read all the entries in the string table
         for ( uint32_t i = 0; i < entries; ++i ) {
-            const bool increment = bstream.readBool();
-            if ( increment ) {
-                ++index;
-            } else {
-                index = bstream.readVarUInt32() + 1;
-            }
+            if ( !bstream.readBool() )
+                index += bstream.readVarUInt32() + 2;
+            else
+                index++;
+
+            ASSERT_GREATER_EQ( index, 0, "Invalid stringtable index" );
 
             // reset key and value before re-reading them
             key[0]   = '\0';
@@ -179,12 +179,13 @@ namespace butterfly {
 
             // insert entry
             if ( table.has_index( index ) ) {
-                auto ref  = table.by_index( index );
-                ref.value = std::string( value, size );
+                auto& ref = table.by_index( index );
+                ref.value.assign( value, size );
             } else {
+                ASSERT_EQUAL( index, table.size(), "Stringtable inserts must be at the end" );
                 std::string k( key );
                 std::string v( value, size );
-                table.insert( index, k, v );
+                table.insert( index, std::move( k ), std::move( v ) );
             }
         }
     }
