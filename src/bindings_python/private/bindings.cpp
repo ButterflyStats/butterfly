@@ -369,10 +369,8 @@ PYBIND11_PLUGIN(butterpy) {
         .export_values();
 
     /// ----------------------------------------------------------------
-    /// resources.hpp
+    /// resource_manifest.hpp
     /// ----------------------------------------------------------------
-
-    m.def("resource_lookup", &resource_lookup, "Lookup a resource hash and return full path");
 
     /// ----------------------------------------------------------------
     /// stringtable.hpp

@@ -44,7 +44,6 @@ OPTION ( WITH_TOOLS "Build tools, only useful for development" 0 )
 
 # Internal libraries
 ADD_SUBDIRECTORY( ${CMAKE_SOURCE_DIR}/src/butterfly_proto )
-ADD_SUBDIRECTORY( ${CMAKE_SOURCE_DIR}/src/butterfly_trie )
 
 # External libraries
 ADD_SUBDIRECTORY( ${CMAKE_SOURCE_DIR}/src/ex_catch2 )
@@ -82,11 +81,3 @@ IF ( ${WITH_EXAMPLES} )
         )
     ENDFOREACH()
 ENDIF ( ${WITH_EXAMPLES} )
-
-#------------------------------------------------------------
-# With tools
-#------------------------------------------------------------
-
-IF ( ${WITH_TOOLS} )
-    ADD_SUBDIRECTORY( ${CMAKE_SOURCE_DIR}/src/tools )
-ENDIF ( ${WITH_TOOLS} )

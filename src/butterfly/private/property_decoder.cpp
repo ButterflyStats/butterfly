@@ -21,7 +21,6 @@
 
 #include <butterfly/flattened_serializer.hpp>
 #include <butterfly/property.hpp>
-#include <butterfly/resources.hpp>
 
 #include <butterfly/util_bitstream.hpp>
 #include <butterfly/util_chash.hpp>
@@ -236,13 +235,8 @@ namespace butterfly {
     void prop_decode_resource( bitstream& b, fs_info* f, property* p ) {
         uint64_t idx = b.readVarUInt64();
 
-        if (idx == 0) {
-            p->data_str = "none";
-            p->type = property::V_STRING;
-        } else {
-            p->data_str = resource_lookup(idx);
-            p->type = property::V_STRING;
-        }
+        p->data_str = "";
+        p->type = property::V_STRING;
     }
 
     /* clang-format on */

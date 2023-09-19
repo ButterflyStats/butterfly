@@ -26,7 +26,7 @@
 
 namespace butterfly {
     /** MurmurHash implementation from https://github.com/aappleby/smhasher/blob/master/src/MurmurHash2.cpp */
-    uint64_t MurmurHash64( const void* key, int len, uint64_t seed ) {
+    uint64_t MurmurHash64( const void* key, uint32_t len, uint64_t seed ) {
         const uint32_t m = 0x5bd1e995;
         const int r      = 24;
 

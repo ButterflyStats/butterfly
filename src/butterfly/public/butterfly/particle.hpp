@@ -26,6 +26,8 @@
 #include <unordered_map>
 #include <cstdint>
 
+#include "resource_manifest.hpp"
+
 namespace butterfly {
     /** Particle being rendered */
     struct particle {
@@ -91,7 +93,7 @@ namespace butterfly {
         void clear() { particles.clear(); }
 
         /** Process particle manager updates */
-        void process_update( char* data, uint32_t size );
+        void process_update( const resource_manifest& manifest, char* data, uint32_t size );
 
     private:
         storage_t particles;

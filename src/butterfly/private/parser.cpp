@@ -350,6 +350,10 @@ namespace butterfly {
             ASSERT_LESS( size, sizeof(data), "Message doesn't fit data buffer" );
 
             switch ( type ) {
+            case svc_ServerInfo:
+                bs.readBytes( data, size );
+                this->svc_handle_server_info( data, size );
+                break;
             case svc_CreateStringTable:
                 bs.readBytes( data, size );
                 this->svc_handle_stringtable_create( data, size );
@@ -378,10 +382,18 @@ namespace butterfly {
                     bs.seekForward( size << 3 );
                 }
             } break;
+            case net_SpawnGroup_Load:
+                bs.readBytes( data, size );
+                this->net_spawngroup_load( data, size );
+                break;
+            case net_SpawnGroup_ManifestUpdate:
+                bs.readBytes( data, size );
+                this->net_spawngroup_manifest_update( data, size );
+                break;
             case DOTA_UM_ParticleManager:
             case UM_ParticleManager: {
                 bs.readBytes( data, size );
-                particles.process_update( data, size );
+                particles.process_update( manifest, data, size );
             } break;
             default:
                 ASSERT_TRUE( type < packets.size(), "Unkown type would overflow packet list" );
@@ -432,6 +444,13 @@ namespace butterfly {
         serializers->build( classes );
     }
 
+    void parser::svc_handle_server_info( const char* data, uint32_t size ) {
+        CSVCMsg_ServerInfo proto;
+        ASSERT_TRUE( proto.ParseFromArray( data, size ), "Unable to parse protobuf packet" );
+
+        manifest.update( proto.game_session_manifest() );
+    }
+
     void parser::svc_handle_stringtable_create( const char* data, uint32_t size ) {
         CSVCMsg_CreateStringTable proto;
         ASSERT_TRUE( proto.ParseFromArray( data, size ), "Unable to parse protobuf packet" );
@@ -449,6 +468,20 @@ namespace butterfly {
         ASSERT_TRUE( stringtables.has_index( proto.table_id() ), "Trying to update unkown stringtable" );
         auto& tbl = stringtables.by_index( proto.table_id() );
         tbl.value.update( &proto );
+    }
+
+    void parser::net_spawngroup_load( const char* data, uint32_t size ) {
+        CNETMsg_SpawnGroup_Load proto;
+        ASSERT_TRUE( proto.ParseFromArray( data, size ), "Unable to parse protobuf packet" );
+
+        manifest.update( proto.spawngroupmanifest() );
+    }
+
+    void parser::net_spawngroup_manifest_update( const char* data, uint32_t size ) {
+        CNETMsg_SpawnGroup_ManifestUpdate proto;
+        ASSERT_TRUE( proto.ParseFromArray( data, size ), "Unable to parse protobuf packet" );
+
+        manifest.update( proto.spawngroupmanifest() );
     }
 
     void parser::svc_handle_entities( const char* data, uint32_t size, visitor* v ) {

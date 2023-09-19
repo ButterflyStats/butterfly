@@ -34,7 +34,6 @@
 #include <butterfly/particle.hpp>
 #include <butterfly/property_decoder.hpp>
 #include <butterfly/property.hpp>
-#include <butterfly/resources.hpp>
 #include <butterfly/stringtable.hpp>
 #include <butterfly/util_assert.hpp>
 #include <butterfly/util_bitstream.hpp>

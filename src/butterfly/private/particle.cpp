@@ -22,7 +22,6 @@
 #include <string>
 #include <cstdint>
 #include <butterfly/particle.hpp>
-#include <butterfly/resources.hpp>
 #include <butterfly/proto/usermessages.pb.h>
 
 #define ASSIGN_IF_PROTO( _proto_, _field, _default ) ( _proto_.has_##_field() ) ? ( _proto_._field() ) : ( _default );
@@ -48,7 +47,7 @@ namespace butterfly {
         return p.cpoints.back();
     }
 
-    void particle_manager::process_update( char* data, uint32_t size ) {
+    void particle_manager::process_update( const resource_manifest& manifest, char* data, uint32_t size ) {
         CUserMsg_ParticleManager proto;
         proto.ParseFromArray( data, size );
 
@@ -56,7 +55,7 @@ namespace butterfly {
         // Create a new particle
         case GAME_PARTICLE_MANAGER_EVENT_CREATE: {
             particle p;
-            p.name              = resource_lookup( proto.create_particle().particle_name_index() );
+            p.name              = manifest.resource_lookup( proto.create_particle().particle_name_index() );
             p.name_idx          = proto.create_particle().particle_name_index();
             p.attach_type       = ASSIGN_IF_PROTO( proto.create_particle(), attach_type, 0 );
             p.ehandle           = ASSIGN_IF_PROTO( proto.create_particle(), entity_handle, 0 );
