@@ -67,7 +67,7 @@ namespace butterfly {
                 int32_t iMax   = static_cast<int32_t>( max );
                 int32_t iDelta = ( iMax - iMin ) < 1 ? 1 : ( iMax - iMin );
 
-                int32_t iLog2 = ceil( log2( iDelta ) ) + 1;
+                int32_t iLog2 = required_bits( iDelta );
                 int32_t range = ( 1 << iLog2 );
 
                 uint32_t iBits = bc;

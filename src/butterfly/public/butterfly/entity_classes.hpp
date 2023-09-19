@@ -66,9 +66,6 @@ namespace butterfly {
 
         /** Returns id of class */
         uint32_t class_id( const std::string& cls ) { return classes.by_key( cls ).index; }
-
-        /** Returns number of bits to read for entity classes */
-        uint8_t bits() { return std::ceil( std::log2( classes.size() ) ); }
     };
 } /* butterfly */
 

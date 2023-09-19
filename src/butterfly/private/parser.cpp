@@ -28,6 +28,7 @@
 #include <butterfly/proto/gameevents.pb.h>
 
 #include <butterfly/util_bitstream.hpp>
+#include <butterfly/util_platform.hpp>
 #include <butterfly/dem.hpp>
 #include <butterfly/demfile.hpp>
 #include <butterfly/entity.hpp>
@@ -485,7 +486,7 @@ namespace butterfly {
             // Handle update
             switch ( etype ) {
             case E_CREATE: {
-                uint32_t cls = b.read( classes.bits() );
+                uint32_t cls = b.read( required_bits( classes->size() ) );
                 b.read( 17 );      // serial
                 b.readVarUInt32(); // unkown
 
