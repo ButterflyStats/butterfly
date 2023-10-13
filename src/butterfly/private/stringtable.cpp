@@ -158,13 +158,13 @@ namespace butterfly {
                         // verify and get length
                         ASSERT_TRUE( snappy::IsValidCompressedBuffer( value, size ), "Invalid snappy compression buffer (value)" );
                         ASSERT_TRUE( snappy::GetUncompressedLength( value, size, &uncomp_size ), "Unable to get uncompressed length (value)" );
+                        ASSERT_TRUE( uncomp_size < STRINGTABLE_MAX_VALUE_SIZE, "Decompressed stringtable too big (value)" );
 
                         // uncompress
                         uncomp_data.resize( uncomp_size );
                         ASSERT_TRUE( snappy::RawUncompress( value, size, &uncomp_data[0] ), "Failed to decompress data (value)" );
 
                         // save to value
-                        ASSERT_TRUE( size < STRINGTABLE_MAX_VALUE_SIZE, "Decompressed stringtable to big (value)" );
                         size = uncomp_size;
                         memcpy(value, uncomp_data.c_str(), size);
                     }
