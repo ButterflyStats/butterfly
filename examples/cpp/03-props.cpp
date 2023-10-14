@@ -45,9 +45,7 @@ public:
         std::cout << "Entity deleted: " << p->classes->by_index(ent->cls).key << " (" << ent->cls << ")" << std::endl;
 
         std::cout << "=========================" << std::endl;
-        for (auto &p : ent->properties) {
-            std::cout << p.second->info->name << " " << p.second->as_string() << std::endl;
-        }
+        ent->spew(p->serializers);
         std::cout << std::endl;
     }
 };

@@ -63,31 +63,33 @@ namespace butterfly {
             return new T( args... );
 #endif /* BUTTERFLY_OBJECTPOOL_DISABLE */
 
+            T* addr = nullptr;
+
+            {
 #if BUTTERFLY_THREADSAFE
-            std::lock_guard<std::mutex> lock( mut );
+                std::lock_guard<std::mutex> lock( mut );
 #endif /* BUTTERFLY_THREADSAFE */
 
-            ASSERT_TRUE( page_mem, "Objectpool already deallocated" );
+                ASSERT_TRUE( page_mem != nullptr, "Objectpool already deallocated" );
 
-            // Return a reserved spot
-            if ( freelist ) {
-                T* res   = freelist;
-                freelist = *( (T**)freelist );
-                new ( res ) T( args... );
-                return res;
+                // Return a reserved spot
+                if ( freelist ) {
+                    T* res   = freelist;
+                    freelist = *reinterpret_cast<T**>( freelist );
+                    new ( res ) T( args... );
+                    return res;
+                }
+
+                // Allocate a new node if necessary
+                if ( page_size >= page_capacity ) {
+                    allocate_page();
+                }
+
+                // Allocate object
+                addr = &reinterpret_cast<T*>( page_mem.load() )[page_size];
+                ++page_size;
             }
-
-            // Allocate a new node if necessary
-            if ( page_size >= page_capacity ) {
-                allocate_page();
-            }
-
-            // Allocate object
-            char* addr = (char*)page_mem;
-            addr += page_size * objsize;
-            T* res = new ( addr ) T( args... );
-            ++page_size;
-            return res;
+            return new ( addr ) T( args... );
         }
 
         /** Free T allocated by us */
@@ -97,16 +99,16 @@ namespace butterfly {
             return;
 #endif /* BUTTERFLY_OBJECTPOOL_DISABLE */
 
+            if ( page_mem == nullptr )
+                return;
+
+            obj->~T();
+            
 #if BUTTERFLY_THREADSAFE
             std::lock_guard<std::mutex> lock( mut );
 #endif /* BUTTERFLY_THREADSAFE */
 
-            if ( !page_mem )
-                return;
-
-            obj->~T();
-
-            *( (T**)obj ) = freelist;
+            *reinterpret_cast<T**>( obj ) = freelist;
             freelist      = obj;
         }
 
@@ -133,7 +135,7 @@ namespace butterfly {
 
             /** Allocate a new page */
             page( size_t capacity ) : next( nullptr ), mem( nullptr ), capacity( capacity ) {
-                mem = ::operator new( objsize* capacity );
+                mem = ::operator new( sizeof( T ) * capacity );
             }
 
             /** Free page memory */
@@ -149,14 +151,11 @@ namespace butterfly {
         /** Last allocated page */
         page* page_last;
         /** Pointer to page_last->mem */
-        void* page_mem;
+        std::atomic<void*> page_mem;
         /** page_last->capacity */
         size_t page_capacity;
         /** Mutex */
         std::mutex mut;
-
-        /** Result of sizeof(T) rounded up to a power of 2 */
-        static constexpr size_t objsize = ( ( sizeof( T ) + sizeof( void* ) - 1 ) / sizeof( void* ) * sizeof( void* ) );
     };
 } /* butterfly */
 

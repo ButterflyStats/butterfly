@@ -33,6 +33,7 @@
 #include <butterfly/packets.hpp>
 #include <butterfly/particle.hpp>
 #include <butterfly/stringtable.hpp>
+#include <butterfly/resource_manifest.hpp>
 #include <butterfly/util_dict.hpp>
 #include <butterfly/util_noncopyable.hpp>
 
@@ -49,6 +50,8 @@ namespace butterfly {
         demfile* dem;
         /** Server-build the replay was generated with */
         uint32_t buildnumber;
+        /** Resource manifest */
+        resource_manifest manifest;
         /** List of stringtables */
         dict<stringtable> stringtables;
         /** Entity classes */
@@ -127,11 +130,20 @@ namespace butterfly {
         /** Handles all packets */
         void dem_handle_packet( bitstream& bs, visitor* v );
 
+        /** Handles server info */
+        void svc_handle_server_info( const char* data, uint32_t size );
+
         /** Handles stringtable creation */
         void svc_handle_stringtable_create( const char* data, uint32_t size );
 
         /** Handles stringtable updates */
         void svc_handle_stringtable_update( const char* data, uint32_t size );
+
+        /** Handles spawngroup load */
+        void net_spawngroup_load( const char* data, uint32_t size );
+
+        /** Handles spawngroup manifest update */
+        void net_spawngroup_manifest_update( const char* data, uint32_t size );
 
         /** Handles entitie updates */
         void svc_handle_entities( const char* data, uint32_t size, visitor* v );

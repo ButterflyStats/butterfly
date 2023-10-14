@@ -73,18 +73,32 @@ static inline bool bf_assert( const char* format, ... ) {
         expect( !( X ), 1 ) || bf_assert( "%s:%d: %s.\n", __FILE__, __LINE__, MESSAGE );                               \
     } while ( 0 )
 
-/// Terminates the program if X is less than Y
+/// Terminates the program if X is less than or equal to Y
 #define ASSERT_GREATER( X, Y, MESSAGE )                                                                                \
     do {                                                                                                               \
-        expect( ( X ) >= ( Y ), 1 ) ||                                                                                 \
+        expect( ( X ) > ( Y ), 1 ) ||                                                                                  \
             bf_assert( "%s:%d: Expected %s > %s: %s.\n", __FILE__, __LINE__, #X, #Y, MESSAGE );                        \
     } while ( 0 )
 
-/// Terminates the program if X is greater than Y
+/// Terminates the program if X is less than Y
+#define ASSERT_GREATER_EQ( X, Y, MESSAGE )                                                                             \
+    do {                                                                                                               \
+        expect( ( X ) >= ( Y ), 1 ) ||                                                                                 \
+            bf_assert( "%s:%d: Expected %s >= %s: %s.\n", __FILE__, __LINE__, #X, #Y, MESSAGE );                       \
+    } while ( 0 )
+
+/// Terminates the program if X is greater than or equal to Y
 #define ASSERT_LESS( X, Y, MESSAGE )                                                                                   \
     do {                                                                                                               \
-        expect( ( X ) <= ( Y ), 1 ) ||                                                                                 \
+        expect( ( X ) < ( Y ), 1 ) ||                                                                                  \
             bf_assert( "%s:%d: Expected %s < %s: %s.\n", __FILE__, __LINE__, #X, #Y, MESSAGE );                        \
+    } while ( 0 )
+
+/// Terminates the program if X is greater than Y
+#define ASSERT_LESS_EQ( X, Y, MESSAGE )                                                                                \
+    do {                                                                                                               \
+        expect( ( X ) <= ( Y ), 1 ) ||                                                                                 \
+            bf_assert( "%s:%d: Expected %s <= %s: %s.\n", __FILE__, __LINE__, #X, #Y, MESSAGE );                       \
     } while ( 0 )
 
 #endif /* BUTTERFLY_UTIL_ASSERT_HPP */

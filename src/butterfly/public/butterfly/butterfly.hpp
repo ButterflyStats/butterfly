@@ -26,15 +26,12 @@
 #include <butterfly/combatlog.hpp>
 #include <butterfly/dem.hpp>
 #include <butterfly/demfile.hpp>
-#include <butterfly/entity_classes.hpp>
 #include <butterfly/entity.hpp>
 #include <butterfly/flattened_serializer.hpp>
 #include <butterfly/packets.hpp>
 #include <butterfly/parser.hpp>
 #include <butterfly/particle.hpp>
 #include <butterfly/property_decoder.hpp>
-#include <butterfly/property.hpp>
-#include <butterfly/resources.hpp>
 #include <butterfly/stringtable.hpp>
 #include <butterfly/util_assert.hpp>
 #include <butterfly/util_bitstream.hpp>

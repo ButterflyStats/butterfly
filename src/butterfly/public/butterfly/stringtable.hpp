@@ -35,8 +35,19 @@ namespace butterfly {
     /** Networked stringtable containing a set of keys and values. */
     class stringtable {
     public:
+        /** Structure for a single entry */
+        struct entry_t {
+            /** Name of entry */
+            std::string name;
+            /** Value */
+            std::string value;
+
+            entry_t(std::string name, std::string value)
+                : name( std::move( name ) ), value( std::move( value ) ) {}
+        };
+
         /** Type of multiindex container */
-        typedef dict<std::string> container;
+        typedef std::vector<entry_t> container;
         /** Size type of said container */
         typedef container::size_type size_type;
         /** Value type */
@@ -52,38 +63,6 @@ namespace butterfly {
         /** Constructor, initializes table from protobuf object */
         stringtable( CSVCMsg_CreateStringTable* table );
 
-        /** Move constructor */
-        stringtable( stringtable&& o ) noexcept { swap( o ); }
-
-        /** Move assignment operator */
-        stringtable& operator=( stringtable&& o ) {
-            swap( o );
-            return *this;
-        }
-
-        /** Copy constructor */
-        stringtable( const stringtable& o ) noexcept {
-            tblName = o.tblName;
-            userDataFixed = o.userDataFixed;
-            userDataSize = o.userDataSize;
-            userDataSizeBits = o.userDataSizeBits;
-            flags = o.flags;
-            table = o.table;
-        }
-
-        /** Default destructor */
-        ~stringtable() = default;
-
-        /** Swap this stringtable with given one */
-        void swap( stringtable& s ) {
-            std::swap( tblName, s.tblName );
-            std::swap( userDataFixed, s.userDataFixed );
-            std::swap( userDataSize, s.userDataSize );
-            std::swap( userDataSizeBits, s.userDataSizeBits );
-            std::swap( flags, s.flags );
-            std::swap( table, s.table );
-        }
-
         /** Returns iterator pointed at the beginning of the stringtable entries */
         iterator begin() { return table.begin(); }
 
@@ -92,23 +71,31 @@ namespace butterfly {
 
         /** Return number of elements stored in the stringtable */
         size_type size() { return table.size(); }
-
+        
         /** Returns true if key exists */
-        bool has_key( const std::string& key ) { return table.has_key( key ); }
+        bool has_key( const std::string& key ) {
+            for ( auto& e : table )
+                if ( e.name == key )
+                    return true;
+            return false;
+        }
 
         /** Return entry by key */
-        const value_type& by_key( const std::string& key ) {
-            ASSERT_TRUE( table.has_key( key ), "Trying to fetch unkown key" );
-            return table.by_key( key );
+        const value_type& by_key(const std::string& key) {
+            for ( auto& e : table )
+                if ( e.name == key )
+                    return e;
+            ASSERT_TRUE( false, "Trying to fetch unknown key" );
+            return table[0];
         }
 
         /** Retruns true if index exists */
-        bool has_index( uint32_t idx ) { return table.has_index( idx ); }
+        bool has_index( uint32_t idx ) { return table.size() > idx; }
 
         /** Return entry by index */
         const value_type& by_index( uint32_t idx ) {
-            ASSERT_TRUE( table.has_index( idx ), "Trying to fetch unkown key" );
-            return table.by_index( idx );
+            ASSERT_LESS( idx, table.size(), "Trying to fetch unkown key" );
+            return table[idx];
         }
 
         /** Remove all entries */
@@ -126,14 +113,14 @@ namespace butterfly {
     private:
         /** Name of this stringtable */
         std::string tblName;
-        /** Whether the data read from updates has a fixed size */
-        bool userDataFixed;
-        /** Size of data in bytes */
-        uint32_t userDataSize;
         /** Size of data in bits */
         uint32_t userDataSizeBits;
         /** Flags for this table */
         int32_t flags;
+        /** Whether the data read from updates has a fixed size */
+        bool userDataFixed;
+        /** Whether the data size uses UBitVar encoding or it's always encoded as 17 bits */
+        bool usingVarintBitcounts;
         /** List of stringtable entries */
         container table;
 

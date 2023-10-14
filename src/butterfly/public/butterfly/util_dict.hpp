@@ -26,6 +26,7 @@
 #include <vector>
 #include <type_traits>
 #include <unordered_map>
+#include <butterfly/util_assert.hpp>
 
 namespace butterfly {
     namespace detail {
@@ -87,7 +88,7 @@ namespace butterfly {
         const_iterator cend() { return entries.cend(); }
 
         /** Returns size of list */
-        size_t size() { return entries.size(); }
+        size_t size() const { return entries.size(); }
 
         /** Reserves memory for a certain number of entries */
         void reserve( const size_type size ) { entries.reserve( size ); }
@@ -105,6 +106,8 @@ namespace butterfly {
             if ( entries.size() <= index )
                 entries.resize( index + 1 );
 
+            ASSERT_TRUE( keyMap.find( key ) == keyMap.end(), "Entry key collision" );
+
             entries[index] = entry_t{index, key, std::forward<V>( v )};
             keyMap[key]    = index;
 
@@ -112,16 +115,29 @@ namespace butterfly {
         }
 
         /** Checks if specified key exists */
-        bool has_key( const std::string& key ) { return ( keyMap.find( key ) != keyMap.end() ); }
+        bool has_key( const std::string& key ) const { return ( keyMap.find( key ) != keyMap.end() ); }
 
         /** Checks if index is valid */
-        bool has_index( std::size_t idx ) { return entries.size() > idx; }
+        bool has_index( std::size_t idx ) const { return entries.size() > idx; }
 
         /** Returns entry by key */
-        value_type& by_key( const std::string& key ) { return entries[keyMap[key]]; }
+        entry_t& by_key( const std::string& key ) { return entries[keyMap[key]]; }
+        const entry_t* find_by_key( const std::string& key ) const {
+            auto id = keyMap.find( key );
+            if ( id == keyMap.end() )
+                return nullptr;
+            return &entries[id->second];
+        }
 
         /** Returns entry by index */
-        typename std::vector<entry_t>::reference by_index( std::size_t idx ) { return entries[idx]; }
+        entry_t& by_index( std::size_t idx ) {
+            ASSERT_LESS( idx, entries.size(), "Invalid entry index" );
+            return entries[idx];
+        }
+        const entry_t& by_index( std::size_t idx ) const {
+            ASSERT_LESS( idx, entries.size(), "Invalid entry index" );
+            return entries[idx];
+        }
 
     private:
         /** Key -> Index Mapping */

@@ -28,6 +28,19 @@
 #else
 #define expect( __expr, __c ) __expr
 #define force_inline inline
+#include <intrin.h>
 #endif /* __GNUC */
+
+force_inline uint32_t required_bits( uint32_t x ) {
+    if ( x <= 1 )
+        return 1;
+#ifndef __GNUC__
+    unsigned long result;
+    _BitScanReverse( &result, x - 1 );
+    return 1 + static_cast<uint32_t>( result );
+#else
+    return 32 - __builtin_clz( x - 1 );
+#endif /* __GNUC */
+}
 
 #endif /* BUTTERFLY_UTIL_PLATFORM_HPP */

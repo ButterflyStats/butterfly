@@ -22,8 +22,7 @@
 #include <string>
 #include <cstdint>
 #include <butterfly/particle.hpp>
-#include <butterfly/resources.hpp>
-#include <butterfly/proto/dota_usermessages.pb.h>
+#include <butterfly/proto/usermessages.pb.h>
 
 #define ASSIGN_IF_PROTO( _proto_, _field, _default ) ( _proto_.has_##_field() ) ? ( _proto_._field() ) : ( _default );
 
@@ -48,15 +47,15 @@ namespace butterfly {
         return p.cpoints.back();
     }
 
-    void particle_manager::process_update( char* data, uint32_t size ) {
-        CDOTAUserMsg_ParticleManager proto;
+    void particle_manager::process_update( const resource_manifest& manifest, char* data, uint32_t size ) {
+        CUserMsg_ParticleManager proto;
         proto.ParseFromArray( data, size );
 
         switch ( proto.type() ) {
         // Create a new particle
-        case DOTA_PARTICLE_MANAGER_EVENT_CREATE: {
+        case GAME_PARTICLE_MANAGER_EVENT_CREATE: {
             particle p;
-            p.name              = resource_lookup( proto.create_particle().particle_name_index() );
+            p.name              = manifest.resource_lookup( proto.create_particle().particle_name_index() );
             p.name_idx          = proto.create_particle().particle_name_index();
             p.attach_type       = ASSIGN_IF_PROTO( proto.create_particle(), attach_type, 0 );
             p.ehandle           = ASSIGN_IF_PROTO( proto.create_particle(), entity_handle, 0 );
@@ -66,7 +65,7 @@ namespace butterfly {
         } break;
 
         // Release the given particle index
-        case DOTA_PARTICLE_MANAGER_EVENT_RELEASE: {
+        case GAME_PARTICLE_MANAGER_EVENT_RELEASE: {
             auto it = particles.find( proto.index() );
             if ( it != particles.end() ) {
                 particles.erase( it );
@@ -74,7 +73,7 @@ namespace butterfly {
         } break;
 
         // Destroy the particle effect
-        case DOTA_PARTICLE_MANAGER_EVENT_DESTROY: {
+        case GAME_PARTICLE_MANAGER_EVENT_DESTROY: {
             auto it = particles.find( proto.index() );
             if ( it != particles.end() ) {
                 it->second.rendered = false;
@@ -82,7 +81,7 @@ namespace butterfly {
         } break;
 
         // Update particle effect control point
-        case DOTA_PARTICLE_MANAGER_EVENT_UPDATE: {
+        case GAME_PARTICLE_MANAGER_EVENT_UPDATE: {
             auto it = particles.find( proto.index() );
             if ( it == particles.end() )
                 return;
@@ -94,7 +93,7 @@ namespace butterfly {
         } break;
 
         // Update particle effect entity
-        case DOTA_PARTICLE_MANAGER_EVENT_UPDATE_ENT: {
+        case GAME_PARTICLE_MANAGER_EVENT_UPDATE_ENT: {
             auto it = particles.find( proto.index() );
             if ( it == particles.end() )
                 return;
@@ -109,17 +108,31 @@ namespace butterfly {
         } break;
 
         // @todo
-        case DOTA_PARTICLE_MANAGER_EVENT_UPDATE_FORWARD:
-        case DOTA_PARTICLE_MANAGER_EVENT_UPDATE_ORIENTATION:
-        case DOTA_PARTICLE_MANAGER_EVENT_UPDATE_FALLBACK:
-        case DOTA_PARTICLE_MANAGER_EVENT_UPDATE_OFFSET:
-        case DOTA_PARTICLE_MANAGER_EVENT_DESTROY_INVOLVING:
-        case DOTA_PARTICLE_MANAGER_EVENT_LATENCY:
-        case DOTA_PARTICLE_MANAGER_EVENT_SHOULD_DRAW:
-        case DOTA_PARTICLE_MANAGER_EVENT_FROZEN:
-        case DOTA_PARTICLE_MANAGER_EVENT_CHANGE_CONTROL_POINT_ATTACHMENT:
-        case DOTA_PARTICLE_MANAGER_EVENT_UPDATE_ENTITY_POSITION:
-        case DOTA_PARTICLE_MANAGER_EVENT_SET_FOW_PROPERTIES:
+        case GAME_PARTICLE_MANAGER_EVENT_UPDATE_FORWARD:
+        case GAME_PARTICLE_MANAGER_EVENT_UPDATE_ORIENTATION:
+        case GAME_PARTICLE_MANAGER_EVENT_UPDATE_FALLBACK:
+        case GAME_PARTICLE_MANAGER_EVENT_UPDATE_OFFSET:
+        case GAME_PARTICLE_MANAGER_EVENT_DESTROY_INVOLVING:
+        case GAME_PARTICLE_MANAGER_EVENT_LATENCY:
+        case GAME_PARTICLE_MANAGER_EVENT_SHOULD_DRAW:
+        case GAME_PARTICLE_MANAGER_EVENT_FROZEN:
+        case GAME_PARTICLE_MANAGER_EVENT_CHANGE_CONTROL_POINT_ATTACHMENT:
+        case GAME_PARTICLE_MANAGER_EVENT_UPDATE_ENTITY_POSITION:
+        case GAME_PARTICLE_MANAGER_EVENT_SET_FOW_PROPERTIES:
+        case GAME_PARTICLE_MANAGER_EVENT_SET_TEXT:
+        case GAME_PARTICLE_MANAGER_EVENT_SET_SHOULD_CHECK_FOW:
+        case GAME_PARTICLE_MANAGER_EVENT_SET_CONTROL_POINT_MODEL:
+        case GAME_PARTICLE_MANAGER_EVENT_SET_CONTROL_POINT_SNAPSHOT:
+        case GAME_PARTICLE_MANAGER_EVENT_SET_TEXTURE_ATTRIBUTE:
+        case GAME_PARTICLE_MANAGER_EVENT_SET_SCENE_OBJECT_GENERIC_FLAG:
+        case GAME_PARTICLE_MANAGER_EVENT_SET_SCENE_OBJECT_TINT_AND_DESAT:
+        case GAME_PARTICLE_MANAGER_EVENT_DESTROY_NAMED:
+        case GAME_PARTICLE_MANAGER_EVENT_SKIP_TO_TIME:
+        case GAME_PARTICLE_MANAGER_EVENT_CAN_FREEZE:
+        case GAME_PARTICLE_MANAGER_EVENT_SET_NAMED_VALUE_CONTEXT:
+        case GAME_PARTICLE_MANAGER_EVENT_UPDATE_TRANSFORM:
+        case GAME_PARTICLE_MANAGER_EVENT_FREEZE_TRANSITION_OVERRIDE:
+        case GAME_PARTICLE_MANAGER_EVENT_FREEZE_INVOLVING:
             break;
         }
     }

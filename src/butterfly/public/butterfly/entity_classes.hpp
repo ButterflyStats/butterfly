@@ -26,12 +26,11 @@
 #include <cmath>
 #include <cstdint>
 
-#include <butterfly/util_assert.hpp>
 #include <butterfly/util_dict.hpp>
 
 namespace butterfly {
     /** Different types of entities */
-    enum entity_types {
+    enum entity_types : uint8_t {
         ENT_DEFAULT = 0, // Any not fitting 1-5
         ENT_ABILITY = 1, // CDOTA_Ability*, CDOTABaseAbility
         ENT_NPC     = 2, // CDOTA_BaseNPC, CDOTA_NPC
@@ -52,7 +51,7 @@ namespace butterfly {
              * Types are not stored in the replay but provided by butterfly as a convinience to filter
              * entities. Report any classification errors as bugs.
              */
-            uint8_t type;
+            entity_types type;
         };
 
         /** List of networked classes with their id mapped to the name */
@@ -60,15 +59,18 @@ namespace butterfly {
 
         /** Shortcut to classes.classes */
         dict<class_info>* operator->() { return &classes; }
+        const dict<class_info>* operator->() const { return &classes; }
 
         /** Returns true if class is networked */
-        bool is_networked( const std::string& cls ) { return classes.has_key( cls ); }
+        bool is_networked(const std::string& cls) const { return classes.has_key(cls); }
 
         /** Returns id of class */
-        uint32_t class_id( const std::string& cls ) { return classes.by_key( cls ).index; }
-
-        /** Returns number of bits to read for entity classes */
-        uint8_t bits() { return std::ceil( std::log2( classes.size() ) ); }
+        uint32_t class_id( const std::string& cls ) const {
+            const dict<class_info>::entry_t* class_entry = classes.find_by_key(cls);
+            if (class_entry == nullptr)
+                return 0;
+            return class_entry->index;
+        }
     };
 } /* butterfly */
 

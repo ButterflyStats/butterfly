@@ -28,14 +28,13 @@
 #include <butterfly/proto/gameevents.pb.h>
 
 #include <butterfly/util_bitstream.hpp>
+#include <butterfly/util_platform.hpp>
 #include <butterfly/dem.hpp>
 #include <butterfly/demfile.hpp>
 #include <butterfly/entity.hpp>
-#include <butterfly/entity_classes.hpp>
 #include <butterfly/flattened_serializer.hpp>
 #include <butterfly/packets.hpp>
 #include <butterfly/parser.hpp>
-#include <butterfly/property.hpp>
 #include <butterfly/stringtable.hpp>
 #include <butterfly/util_assert.hpp>
 #include <butterfly/util_chash.hpp>
@@ -53,7 +52,7 @@
 
 namespace butterfly {
     parser::parser( )
-        : dem( nullptr ), buildnumber( 0 ), serializers( nullptr ), packets( 2048, false ), seekPos( 0 ) {
+        : dem( nullptr ), buildnumber( 0 ), serializers( nullptr ), seekPos( 0 ), packets( 2048, false ) {
         entities.resize( BUTTERFLY_MAX_ENTS, nullptr );
     }
 
@@ -143,7 +142,7 @@ namespace butterfly {
                 this->dem_handle_send_tables( p );
             break;
         case DEM_ClassInfo:
-            if ( !classes->size() )
+            if ( classes->size() == 0 )
                 this->dem_handle_class_info( p );
 
             if ( v )
@@ -223,7 +222,7 @@ namespace butterfly {
 
                     switch ( type ) {
                     case svc_CreateStringTable:
-                        ASSERT_GREATER( 1000, size, "Message doesn't fit data buffer" );
+                        ASSERT_GREATER_EQ( 1000, size, "Message doesn't fit data buffer" );
                         bs.readBytes( data, size );
                         this->svc_handle_stringtable_create( data, size );
                         break;
@@ -271,11 +270,12 @@ namespace butterfly {
 
             // check if we can get to the seekpoint
             trigger = false;
-            float gtime = gtime = e->get( "m_pGameRules.m_fGameTime"_chash )->data.fl;
+            float gtime = e->get<float>( std::array<uint64_t, 2>{"m_pGameRules"_chash, "m_fGameTime"_chash} );
 
             if (time - gtime < 61) {
-                while (gtime < time) {
-                    gtime = e->get( "m_pGameRules.m_fGameTime"_chash )->data.fl;
+                while ( gtime < time ) {
+                    gtime = e->get<float>( std::array<uint64_t, 2>{
+                        "m_pGameRules"_chash, "m_fGameTime"_chash } );
                     parse( nullptr );
                 }
             }
@@ -328,27 +328,31 @@ namespace butterfly {
 
         // Packet contents: Size as varint, Serialized Flattables buffer
         const std::string& buf = proto.data();
-        ASSERT_GREATER( buf.size(), 10, "Sendtables packet corrupt" );
+        ASSERT_GREATER_EQ( buf.size(), 10, "Sendtables packet corrupt" );
 
         // Read size and verify that we have enough bytes remaining
         uint32_t size, psize;
         uint8_t* data = read_varint32_fast( (uint8_t*)buf.c_str(), size );
         psize         = data - (uint8_t*)buf.c_str();
 
-        ASSERT_GREATER( buf.size() - psize, size, "Sendtables packet corrupt" );
+        ASSERT_GREATER_EQ( buf.size() - psize, size, "Sendtables packet corrupt" );
         this->serializers = new flattened_serializer( data, size );
     }
 
     void parser::dem_handle_packet( bitstream& bs, visitor* v ) {
         // Read packet data
         while ( bs.remaining() > 8 ) {
-            alignas( 8 ) char data[70000];
+            alignas( 8 ) char data[128 * 1024];
             uint32_t type = bs.readUBitVar();
             uint32_t size = bs.readVarUInt32();
 
-            ASSERT_GREATER( 70000, size, "Message doesn't fit data buffer" );
+            ASSERT_LESS( size, sizeof(data), "Message doesn't fit data buffer" );
 
             switch ( type ) {
+            case svc_ServerInfo:
+                bs.readBytes( data, size );
+                this->svc_handle_server_info( data, size );
+                break;
             case svc_CreateStringTable:
                 bs.readBytes( data, size );
                 this->svc_handle_stringtable_create( data, size );
@@ -377,9 +381,18 @@ namespace butterfly {
                     bs.seekForward( size << 3 );
                 }
             } break;
-            case DOTA_UM_ParticleManager: {
+            case net_SpawnGroup_Load:
                 bs.readBytes( data, size );
-                particles.process_update( data, size );
+                this->net_spawngroup_load( data, size );
+                break;
+            case net_SpawnGroup_ManifestUpdate:
+                bs.readBytes( data, size );
+                this->net_spawngroup_manifest_update( data, size );
+                break;
+            case DOTA_UM_ParticleManager:
+            case UM_ParticleManager: {
+                bs.readBytes( data, size );
+                particles.process_update( manifest, data, size );
             } break;
             default:
                 ASSERT_TRUE( type < packets.size(), "Unkown type would overflow packet list" );
@@ -402,13 +415,13 @@ namespace butterfly {
 
         // Map all class_ids to their network_name
         for ( auto& c : proto.classes() ) {
-            ASSERT_TRUE( (unsigned)c.class_id() == classes.classes.size(), "Invalid id skip" );
+            ASSERT_TRUE( (unsigned)c.class_id() == classes->size(), "Invalid id skip" );
 
             classes->insert( c.class_id(), c.network_name(),
-                entity_classes::class_info{constexpr_hash_rt( c.network_name().c_str() ), 0} );
+                entity_classes::class_info{constexpr_hash_rt( c.network_name().c_str() ), ENT_DEFAULT} );
 
             /** Match prefix */
-            auto match = [&]( std::string m1, uint32_t t ) {
+            auto match = [&]( std::string m1, entity_types t ) {
                 if ( std::mismatch( m1.begin(), m1.end(), c.network_name().begin() ).first == m1.end() ) {
                     classes->by_index( c.class_id() )->type = t;
                 }
@@ -430,6 +443,13 @@ namespace butterfly {
         serializers->build( classes );
     }
 
+    void parser::svc_handle_server_info( const char* data, uint32_t size ) {
+        CSVCMsg_ServerInfo proto;
+        ASSERT_TRUE( proto.ParseFromArray( data, size ), "Unable to parse protobuf packet" );
+
+        manifest.update( proto.game_session_manifest() );
+    }
+
     void parser::svc_handle_stringtable_create( const char* data, uint32_t size ) {
         CSVCMsg_CreateStringTable proto;
         ASSERT_TRUE( proto.ParseFromArray( data, size ), "Unable to parse protobuf packet" );
@@ -447,6 +467,20 @@ namespace butterfly {
         ASSERT_TRUE( stringtables.has_index( proto.table_id() ), "Trying to update unkown stringtable" );
         auto& tbl = stringtables.by_index( proto.table_id() );
         tbl.value.update( &proto );
+    }
+
+    void parser::net_spawngroup_load( const char* data, uint32_t size ) {
+        CNETMsg_SpawnGroup_Load proto;
+        ASSERT_TRUE( proto.ParseFromArray( data, size ), "Unable to parse protobuf packet" );
+
+        manifest.update( proto.spawngroupmanifest() );
+    }
+
+    void parser::net_spawngroup_manifest_update( const char* data, uint32_t size ) {
+        CNETMsg_SpawnGroup_ManifestUpdate proto;
+        ASSERT_TRUE( proto.ParseFromArray( data, size ), "Unable to parse protobuf packet" );
+
+        manifest.update( proto.spawngroupmanifest() );
     }
 
     void parser::svc_handle_entities( const char* data, uint32_t size, visitor* v ) {
@@ -484,7 +518,7 @@ namespace butterfly {
             // Handle update
             switch ( etype ) {
             case E_CREATE: {
-                uint32_t cls = b.read( classes.bits() );
+                uint32_t cls = b.read( required_bits( classes->size() ) );
                 b.read( 17 );      // serial
                 b.readVarUInt32(); // unkown
 
@@ -495,31 +529,29 @@ namespace butterfly {
                 }
 
                 // Create new
-                if ( !entities[idx] ) {
-                    entities[idx] = g_entalloc.malloc();
-                }
+                entities[idx] = g_entalloc.malloc( serializers->get( cls ) );
 
                 // Parse entity
+                auto& cls_data = classes.classes.by_index( cls );
                 entities[idx]->id       = idx;
                 entities[idx]->cls      = cls;
-                entities[idx]->cls_hash = classes.classes.by_index( cls )->hash;
-                entities[idx]->type     = classes.classes.by_index( cls )->type;
-                entities[idx]->set_serializer( &serializers->get( cls ) );
+                entities[idx]->cls_hash = cls_data->hash;
+                entities[idx]->type     = cls_data->type;
 
-                const std::string bkey = std::to_string(cls);
-                if (baselines.has_key(bkey) && !baselines.by_key(bkey).value.empty()) {
-                    bitstream b(baselines.by_key(bkey).value);
-                    entities[idx]->parse( b );
+                const std::string bkey = std::to_string( cls );
+                if ( baselines.has_key( bkey ) ) {
+                    bitstream b( baselines.by_key( bkey ).value );
+                    entities[idx]->parse( manifest, b );
                 }
 
-                entities[idx]->parse( b );
+                entities[idx]->parse( manifest, b );
 
                 // Emit event
                 if ( v ) v->on_entity( ENT_CREATED, entities[idx] );
             } break;
             case E_UPDATE: {
                 ASSERT_TRUE( entities[idx], "Unable to find entity in update" );
-                entities[idx]->parse( b );
+                entities[idx]->parse( manifest, b );
                 if ( v ) v->on_entity( ENT_UPDATED, entities[idx] );
             } break;
             case E_LEAVE: {

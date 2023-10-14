@@ -213,10 +213,8 @@ namespace butterfly {
             PKG_CREATE_UM( DesiredTimescale );
             PKG_CREATE_UM( Fade );
             PKG_CREATE_UM( GameTitle );
-            PKG_CREATE_UM( HintText );
             PKG_CREATE_UM( HudMsg );
             PKG_CREATE_UM( HudText );
-            PKG_CREATE_UM( KeyHintText );
             PKG_CREATE_UM( ColoredText );
             PKG_CREATE_UM( RequestState );
             PKG_CREATE_UM( ResetHUD );
@@ -228,19 +226,16 @@ namespace butterfly {
             PKG_CREATE_UM( ShakeDir );
             PKG_CREATE_UM( TextMsg );
             PKG_CREATE_UM( ScreenTilt );
-            PKG_CREATE_UM( Train );
-            PKG_CREATE_UM( VGUIMenu );
             PKG_CREATE_UM( VoiceMask );
-            PKG_CREATE_UM( VoiceSubtitle );
             PKG_CREATE_UM( SendAudio );
             PKG_CREATE_UM( ItemPickup );
             PKG_CREATE_UM( AmmoDenied );
-            PKG_CREATE_UM( CrosshairAngle );
             PKG_CREATE_UM( ShowMenu );
             PKG_CREATE_UM( CreditsMsg );
             PKG_CREATE_UM( CloseCaptionPlaceholder );
             PKG_CREATE_UM( CameraTransition );
             PKG_CREATE_UM( AudioParameter );
+            case DOTA_UM_ParticleManager:
             PKG_CREATE( UM_ParticleManager, CUserMsg_ParticleManager );
             PKG_CREATE( UM_HudError, CUserMsg_HudError );
             PKG_CREATE( UM_CustomGameEvent, CUserMsg_CustomGameEvent );
@@ -266,7 +261,6 @@ namespace butterfly {
             PKG_CREATE_DUM( ChatEvent );
             PKG_CREATE_DUM( CombatHeroPositions );
             // PKG_FREE_DUM(CombatLogData);
-            PKG_CREATE_DUM( CombatLogShowDeath );
             PKG_CREATE_DUM( CreateLinearProjectile );
             PKG_CREATE_DUM( DestroyLinearProjectile );
             PKG_CREATE_DUM( DodgeTrackingProjectiles );
@@ -285,7 +279,6 @@ namespace butterfly {
             PKG_CREATE_DUM( SpectatorPlayerClick );
             PKG_CREATE_DUM( TutorialTipInfo );
             PKG_CREATE_DUM( UnitEvent );
-            PKG_CREATE_DUM( ParticleManager );
             PKG_CREATE_DUM( BotChat );
             PKG_CREATE_DUM( HudError );
             PKG_CREATE_DUM( ItemPurchased );
@@ -355,13 +348,13 @@ namespace butterfly {
             // PKG_CREATE_DUM(UpdateQuestProgress);
             // PKG_CREATE_DUM(MatchMetadata);
             PKG_CREATE(DOTA_UM_MatchDetails, CDOTAUserMsg_StatsMatchDetails);
-        	PKG_CREATE_DUM(QuestStatus);
-        	PKG_CREATE_DUM(SuggestHeroPick);
-        	PKG_CREATE_DUM(SuggestHeroRole);
-        	PKG_CREATE_DUM(KillcamDamageTaken);
-        	PKG_CREATE_DUM(SelectPenaltyGold);
-        	PKG_CREATE_DUM(RollDiceResult);
-        	PKG_CREATE_DUM(FlipCoinResult);
+            PKG_CREATE_DUM(QuestStatus);
+            PKG_CREATE_DUM(SuggestHeroPick);
+            PKG_CREATE_DUM(SuggestHeroRole);
+            PKG_CREATE_DUM(KillcamDamageTaken);
+            PKG_CREATE_DUM(SelectPenaltyGold);
+            PKG_CREATE_DUM(RollDiceResult);
+            PKG_CREATE_DUM(FlipCoinResult);
 
         // Stub packet for unkown types
         default:
@@ -421,10 +414,8 @@ namespace butterfly {
             PKG_DISPATCH_UM( DesiredTimescale );
             PKG_DISPATCH_UM( Fade );
             PKG_DISPATCH_UM( GameTitle );
-            PKG_DISPATCH_UM( HintText );
             PKG_DISPATCH_UM( HudMsg );
             PKG_DISPATCH_UM( HudText );
-            PKG_DISPATCH_UM( KeyHintText );
             PKG_DISPATCH_UM( ColoredText );
             PKG_DISPATCH_UM( RequestState );
             PKG_DISPATCH_UM( ResetHUD );
@@ -436,19 +427,16 @@ namespace butterfly {
             PKG_DISPATCH_UM( ShakeDir );
             PKG_DISPATCH_UM( TextMsg );
             PKG_DISPATCH_UM( ScreenTilt );
-            PKG_DISPATCH_UM( Train );
-            PKG_DISPATCH_UM( VGUIMenu );
             PKG_DISPATCH_UM( VoiceMask );
-            PKG_DISPATCH_UM( VoiceSubtitle );
             PKG_DISPATCH_UM( SendAudio );
             PKG_DISPATCH_UM( ItemPickup );
             PKG_DISPATCH_UM( AmmoDenied );
-            PKG_DISPATCH_UM( CrosshairAngle );
             PKG_DISPATCH_UM( ShowMenu );
             PKG_DISPATCH_UM( CreditsMsg );
             PKG_DISPATCH_UM( CloseCaptionPlaceholder );
             PKG_DISPATCH_UM( CameraTransition );
             PKG_DISPATCH_UM( AudioParameter );
+            case DOTA_UM_ParticleManager:
             PKG_DISPATCH( UM_ParticleManager, CUserMsg_ParticleManager );
             PKG_DISPATCH( UM_HudError, CUserMsg_HudError );
             PKG_DISPATCH( UM_CustomGameEvent, CUserMsg_CustomGameEvent );
@@ -474,7 +462,6 @@ namespace butterfly {
             PKG_DISPATCH_DUM( ChatEvent );
             PKG_DISPATCH_DUM( CombatHeroPositions );
             // PKG_FREE_DUM(CombatLogData);
-            PKG_DISPATCH_DUM( CombatLogShowDeath );
             PKG_DISPATCH_DUM( CreateLinearProjectile );
             PKG_DISPATCH_DUM( DestroyLinearProjectile );
             PKG_DISPATCH_DUM( DodgeTrackingProjectiles );
@@ -493,7 +480,6 @@ namespace butterfly {
             PKG_DISPATCH_DUM( SpectatorPlayerClick );
             PKG_DISPATCH_DUM( TutorialTipInfo );
             PKG_DISPATCH_DUM( UnitEvent );
-            PKG_DISPATCH_DUM( ParticleManager );
             PKG_DISPATCH_DUM( BotChat );
             PKG_DISPATCH_DUM( HudError );
             PKG_DISPATCH_DUM( ItemPurchased );

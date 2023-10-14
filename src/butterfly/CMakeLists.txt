@@ -15,14 +15,14 @@ SET ( BUTTERFLY_SOURCES
     ${BUTTERFLY_SRC}/dem.cpp
     ${BUTTERFLY_SRC}/demfile.cpp
     ${BUTTERFLY_SRC}/entity.cpp
-    ${BUTTERFLY_SRC}/fieldpath_huffman.cpp
     ${BUTTERFLY_SRC}/flattened_serializer.cpp
     ${BUTTERFLY_SRC}/parser.cpp
     ${BUTTERFLY_SRC}/particle.cpp
     ${BUTTERFLY_SRC}/property_decoder.cpp
-    ${BUTTERFLY_SRC}/resources.cpp
+    ${BUTTERFLY_SRC}/resource_manifest.cpp
     ${BUTTERFLY_SRC}/stringtable.cpp
     ${BUTTERFLY_SRC}/util_assert.cpp
+    ${BUTTERFLY_SRC}/util_lzss.cpp
     ${BUTTERFLY_SRC}/util_vpk.cpp
 )
 
@@ -35,7 +35,7 @@ TARGET_INCLUDE_DIRECTORIES( butterfly
 )
 
 TARGET_LINK_LIBRARIES( butterfly
-    butterfly_proto butterfly_trie
+    butterfly_proto
     ex_snappy ex_protobuf ex_variant
 )
 
@@ -64,7 +64,7 @@ IF ( 0 )
         ${CMAKE_CURRENT_SOURCE_DIR}/test/butterfly/util_ztime.cpp
     )
 
-    TARGET_LINK_LIBRARIES ( butterfly_test butterfly ex_catch )
+    TARGET_LINK_LIBRARIES ( butterfly_test butterfly Catch2WithMain )
 
     INSTALL(
         TARGETS butterfly_test

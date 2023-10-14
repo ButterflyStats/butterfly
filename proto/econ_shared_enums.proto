@@ -1,6 +1,3 @@
-option optimize_for = SPEED;
-option cc_generic_services = false;
-
 enum EGCEconBaseMsg {
 	k_EMsgGCGenericResult = 2579;
 }
@@ -15,13 +12,6 @@ enum EGCMsgResponse {
 	k_EGCMsgResponseUnknownError = 6;
 	k_EGCMsgResponseNotLoggedOn = 7;
 	k_EGCMsgFailedToCreate = 8;
-}
-
-enum EGCPartnerRequestResponse {
-	k_EPartnerRequestOK = 1;
-	k_EPartnerRequestBadAccount = 2;
-	k_EPartnerRequestNotLinked = 3;
-	k_EPartnerRequestUnsupportedPartnerType = 4;
 }
 
 enum EGCMsgUseItemResponse {
@@ -45,4 +35,3 @@ message CMsgGenericResult {
 	optional uint32 eresult = 1 [default = 2];
 	optional string debug_message = 2;
 }
-

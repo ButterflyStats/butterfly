@@ -25,72 +25,66 @@
 namespace butterfly {
     /// Forward decl
     class bitstream;
-    class property;
+    class resource_manifest;
     struct fs_info;
     struct fs;
-
-    /// Decoder function prototype
-    typedef void( decoder_fcn )( bitstream&, fs_info*, property* );
+    enum class PropertyDecoderType : uint8_t;
 
     /** Returns decoder name as string */
     const char* prop_decoder_name( fs& f );
 
     /** Decode boolean */
-    void prop_decode_bool( bitstream& b, fs_info* f, property* p );
+    void prop_decode_bool( bitstream& b, const fs_info* f, void* p );
 
     /** Decode integer as 64 bit little endian (fixed-width) */
-    void prop_decode_fixed64( bitstream& b, fs_info* f, property* p );
+    void prop_decode_fixed64( bitstream& b, const fs_info* f, void* p );
 
     /** Decode float coord */
-    void prop_decode_coord( bitstream& b, fs_info* f, property* p );
-
-    /** Decode size property */
-    void prop_decode_dynamic( bitstream& b, fs_info* f, property* p );
+    void prop_decode_coord( bitstream& b, const fs_info* f, void* p );
 
     /** Decode float */
-    void prop_decode_float( bitstream& b, fs_info* f, property* p );
-
-    /** Decode simulation time */
-    void prop_decode_simtime( bitstream& b, fs_info* f, property* p );
-
-    /** Decode normalized float */
-    void prop_decode_normal( bitstream& b, fs_info* f, property* p );
+    void prop_decode_float( bitstream& b, const fs_info* f, void* p );
 
     /** Decode standard float */
-    void prop_decode_noscale( bitstream& b, fs_info* f, property* p );
+    void prop_decode_float_no_decoder(bitstream& b, const fs_info* f, void* p);
 
-    /** Decode quantized */
-    void prop_decode_quantized( bitstream& b, fs_info* f, property* p );
+    /** Decode simulation time */
+    void prop_decode_simtime( bitstream& b, const fs_info* f, void* p );
+
+    /** Decode normalized float */
+    void prop_decode_normal( bitstream& b, const fs_info* f, void* p );
 
     /** Decode Quaternion */
-    void prop_decode_quaternion( bitstream& b, fs_info* f, property* p );
+    void prop_decode_quaternion( bitstream& b, const fs_info* f, void* p );
+
+    /** Decode coord vector */
+    void prop_decode_coord_vector( bitstream& b, const fs_info* f, void* p );
 
     /** Decode vector */
-    void prop_decode_vector( bitstream& b, fs_info* f, property* p );
+    void prop_decode_vector( bitstream& b, const fs_info* f, void* p );
 
     /** Decode vector2d */
-    void prop_decode_vector2d( bitstream& b, fs_info* f, property* p );
-
-    /** Decode vector4d */
-    void prop_decode_vector4d( bitstream& b, fs_info* f, property* p );
+    void prop_decode_vector2d( bitstream& b, const fs_info* f, void* p );
 
     /** Decode angle */
-    void prop_decode_qangle( bitstream& b, fs_info* f, property* p );
+    void prop_decode_qangle( bitstream& b, const fs_info* f, void* p );
 
-    /** Decode angle (pitch and yawn only) */
-    void prop_decode_qangle_pitch_yawn( bitstream& b, fs_info* f, property* p );
+    /** Decode angle (pitch and yaw only) */
+    void prop_decode_qangle_pitch_yaw( bitstream& b, const fs_info* f, void* p );
 
     /** Decode string */
-    void prop_decode_string( bitstream& b, fs_info* f, property* p );
+    void prop_decode_string( bitstream& b, const fs_info* f, void* p );
 
     /** Decode standard varint */
-    void prop_decode_varint( bitstream& b, fs_info* f, property* p );
+    void prop_decode_varint( bitstream& b, const fs_info* f, void* p );
 
     /** Decode standard varint (signed) */
-    void prop_decode_svarint( bitstream& b, fs_info* f, property* p );
+    void prop_decode_svarint( bitstream& b, const fs_info* f, void* p );
 
     /** Decodes resource string */
-    void prop_decode_resource( bitstream& b, fs_info* f, property* p );
+    void prop_decode_resource( const resource_manifest& m, bitstream& b, const fs_info* f, void* p );
+
+    void DecodeProperty( const resource_manifest& m, PropertyDecoderType dt, bitstream& b, const fs_info* f, void* p );
 } /* butterfly */
 
 #endif /* BUTTERFLY_PROPERTY_DECODER_HPP */

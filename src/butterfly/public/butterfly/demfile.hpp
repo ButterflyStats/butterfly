@@ -40,12 +40,6 @@ namespace butterfly {
      */
     class demfile : private noncopyable {
     public:
-        /** Default move constructor */
-        demfile( demfile&& ) = default;
-
-        /** Default move assignment operator */
-        demfile& operator=( demfile&& ) = default;
-
         /** Loads specified file into memory to be parsed */
         demfile( const char* path, std::function<void (float)> = nullptr );
 

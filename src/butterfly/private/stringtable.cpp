@@ -19,15 +19,18 @@
  *    limitations under the License.
  */
 
-/// Defines the maximum number of keys to keep a history of
-#define STRINGTABLE_KEY_HISTORY 32
+/// Defines the maximum number of names to keep a history of
+#define STRINGTABLE_NAME_HISTORY 32
 
-/// Maximum length of a stringtable Key
-#define STRINGTABLE_MAX_KEY_SIZE 0x400
+#define STRINGTABLE_NAME_HISTORY_MASK (STRINGTABLE_NAME_HISTORY - 1)
 
-/// Maximum size of a stringtable Value
+/// Maximum length of a stringtable entry name
+#define STRINGTABLE_MAX_NAME_SIZE 0x400
+
+/// Maximum size of a stringtable entry value
 #define STRINGTABLE_MAX_VALUE_SIZE 0x4000
 
+#include <array>
 #include <string>
 #include <cmath>
 #include <snappy.h>
@@ -38,9 +41,9 @@
 
 namespace butterfly {
     stringtable::stringtable( CSVCMsg_CreateStringTable* table )
-        : tblName( table->name() ), userDataFixed( table->user_data_fixed_size() ),
-          userDataSize( table->user_data_size() ), userDataSizeBits( table->user_data_size_bits() ),
-          flags( table->flags() ) {
+        : tblName( table->name() ), userDataSizeBits( table->user_data_size_bits() ),
+          flags( table->flags() ), userDataFixed( table->user_data_fixed_size() ),
+          usingVarintBitcounts( table->using_varint_bitcounts() ) {
         // Snappy within snappy because why not
         if ( table->data_compressed() ) {
             size_t size = 0;
@@ -69,9 +72,8 @@ namespace butterfly {
     void stringtable::update( const CDemoStringTables_table_t& tbl ) {
         table.clear();
 
-        for ( auto& item : tbl.items() ) {
-            table.insert( table.size(), item.str(), item.data() );
-        }
+        for ( auto& item : tbl.items() )
+            table.emplace_back( item.str(), item.data() );
     }
 
     void stringtable::update( const uint32_t& entries, const std::string& data ) {
@@ -81,56 +83,46 @@ namespace butterfly {
         // index for consecutive incrementing
         int32_t index = -1;
 
-        // key and value storage
-        #if BUTTERFLY_THREADSAFE
-        char key[STRINGTABLE_MAX_KEY_SIZE]     = {'\0'};
+        // value storage
         char value[STRINGTABLE_MAX_VALUE_SIZE] = {'\0'};
-        #else /* BUTTERFLY_THREADSAFE */
-        static char key[STRINGTABLE_MAX_KEY_SIZE]     = {'\0'};
-        static char value[STRINGTABLE_MAX_VALUE_SIZE] = {'\0'};
-        #endif /* BUTTERFLY_THREADSAFE */
 
-        // keeps track of the last keys
-        std::vector<std::string> keys( STRINGTABLE_KEY_HISTORY, "" );
+        // keeps track of the last names
+        std::array<std::string, STRINGTABLE_NAME_HISTORY> names;
         uint32_t delta_pos = 0;
 
         // read all the entries in the string table
         for ( uint32_t i = 0; i < entries; ++i ) {
-            const bool increment = bstream.readBool();
-            if ( increment ) {
-                ++index;
-            } else {
-                index = bstream.readVarUInt32() + 1;
-            }
+            if ( !bstream.readBool() )
+                index += bstream.readVarUInt32() + 2;
+            else
+                index++;
 
-            // reset key and value before re-reading them
-            key[0]   = '\0';
+            ASSERT_GREATER_EQ( index, 0, "Invalid stringtable index" );
+
+            // reset value before re-reading it
             value[0] = '\0';
 
-            // read key
-            const bool hasKey = bstream.readBool();
-            if ( hasKey ) {
-                // check if the key begins with a stored substring
+            // read name
+            const bool hasName = bstream.readBool();
+            auto& name = names[delta_pos & STRINGTABLE_NAME_HISTORY_MASK];
+            if ( hasName ) {
+                // check if the name begins with a stored substring
                 const bool isSubstring    = bstream.readBool();
-                const uint32_t delta_zero = delta_pos > STRINGTABLE_KEY_HISTORY ? delta_pos & 31 : 0;
+                const uint32_t delta_zero = delta_pos > STRINGTABLE_NAME_HISTORY ? delta_pos & STRINGTABLE_NAME_HISTORY_MASK : 0;
+                
+                name.clear(); // reset name before re-reading it
 
                 if ( isSubstring ) {
-                    const uint32_t sIndex  = ( delta_zero + bstream.read( 5 ) ) & 31;
+                    const uint32_t sIndex  = ( delta_zero + bstream.read( 5 ) ) & STRINGTABLE_NAME_HISTORY_MASK;
                     const uint32_t sLength = bstream.read( 5 );
 
-                    ASSERT_LESS( sIndex, STRINGTABLE_KEY_HISTORY, "Invalid stringtable key-delta specified" );
+                    ASSERT_LESS( sIndex, STRINGTABLE_NAME_HISTORY, "Invalid stringtable name-delta specified" );
 
-                    if ( delta_pos < sIndex || keys[sIndex].size() < sLength ) {
-                        bstream.readString( key, STRINGTABLE_MAX_KEY_SIZE );
-                    } else {
-                        keys[sIndex].copy( key, sLength, 0 );
-                        bstream.readString( &key[sLength], STRINGTABLE_MAX_KEY_SIZE );
-                    }
-                } else {
-                    bstream.readString( key, STRINGTABLE_MAX_KEY_SIZE );
+                    if ( delta_pos >= sIndex && names[sIndex].size() >= sLength )
+                        name.assign( names[sIndex].c_str(), sLength );
                 }
+                bstream.readString( name, STRINGTABLE_MAX_NAME_SIZE );
 
-                keys[delta_pos & 31] = key;
                 ++delta_pos;
             }
 
@@ -152,7 +144,9 @@ namespace butterfly {
                         isCompressed = bstream.readBool();
                     }
 
-                    size = bstream.read( 17 );
+                    size = usingVarintBitcounts
+                        ? bstream.readUBitVar()
+                        : bstream.read( 17 );
 
                     ASSERT_TRUE( size < STRINGTABLE_MAX_VALUE_SIZE, "Decompressed stringtable to big (value)" );
                     bstream.readBytes( value, size );
@@ -164,13 +158,13 @@ namespace butterfly {
                         // verify and get length
                         ASSERT_TRUE( snappy::IsValidCompressedBuffer( value, size ), "Invalid snappy compression buffer (value)" );
                         ASSERT_TRUE( snappy::GetUncompressedLength( value, size, &uncomp_size ), "Unable to get uncompressed length (value)" );
+                        ASSERT_TRUE( uncomp_size < STRINGTABLE_MAX_VALUE_SIZE, "Decompressed stringtable too big (value)" );
 
                         // uncompress
                         uncomp_data.resize( uncomp_size );
                         ASSERT_TRUE( snappy::RawUncompress( value, size, &uncomp_data[0] ), "Failed to decompress data (value)" );
 
                         // save to value
-                        ASSERT_TRUE( size < STRINGTABLE_MAX_VALUE_SIZE, "Decompressed stringtable to big (value)" );
                         size = uncomp_size;
                         memcpy(value, uncomp_data.c_str(), size);
                     }
@@ -178,13 +172,13 @@ namespace butterfly {
             }
 
             // insert entry
-            if ( table.has_index( index ) ) {
-                auto ref  = table.by_index( index );
-                ref.value = std::string( value, size );
+            if ( index < table.size() ) {
+                if ( hasName )
+                    table[index].name = name;
+                table[index].value.assign( value, size );
             } else {
-                std::string k( key );
-                std::string v( value, size );
-                table.insert( index, k, v );
+                ASSERT_EQUAL( index, table.size(), "Stringtable inserts must be at the end" );
+                table.emplace_back( name, std::string( value, size ) );
             }
         }
     }

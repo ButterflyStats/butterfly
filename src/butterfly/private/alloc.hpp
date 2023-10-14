@@ -26,11 +26,23 @@
 
 namespace butterfly {
     // forward decl
-    class property;
+    struct fs_typeinfo;
+    struct fs_info;
+    struct fs_table_data;
+    struct fs;
     class entity;
 
-    /// Property allocator (global)
-    extern object_pool<property> g_propalloc;
+    /// Flattened serializer type info allocator (global)
+    extern object_pool<fs_typeinfo> g_fstypeinfoalloc;
+
+    /// Flattened serializer info allocator (global)
+    extern object_pool<fs_info> g_fsinfoalloc;
+
+    /// Flattened serializer table data allocator (global)
+    extern object_pool<fs_table_data> g_fstabledataalloc;
+
+    /// Flattened serializer allocator (global)
+    extern object_pool<fs> g_fsalloc;
 
     /// Entity allocator (global)
     extern object_pool<entity> g_entalloc;
